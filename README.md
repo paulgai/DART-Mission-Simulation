@@ -136,7 +136,7 @@ No installation is required beyond a modern browser.
 
 ### Option 1 — Open directly
 
-Open `index.html` in a modern browser (Chrome recommended).
+Open https://paulgai.github.io/DART-Mission-Simulation/ in a modern browser (Chrome recommended).
 For some browsers, a local server is still preferable due to ES module loading.
 
 ### Option 2 — Local web server (recommended)
