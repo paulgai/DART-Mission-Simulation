@@ -14,19 +14,15 @@ Among the proposed deflection methods, one of the most promising—and simplest�
 
 Understanding these ideas helps students connect classroom physics—gravity, energy, motion—with real-world challenges. It also highlights why missions like NASA’s DART are not science fiction experiments, but part of a growing global effort to ensure that humanity is capable of protecting Earth from natural hazards.
 
----
-
 <p align="center">
-  <img src="scripts/img/imagesasteroid.gif" alt="Asteroid animation" width="450">
+  <img src="scripts/img/imagesasteroid.gif" alt="Asteroid animation" width="650">
   <br>
   <em>Figure 1. Mapping of Near-Earth Objects (NEOs) discovered over the past 20 years.</em>
   <br>
   <sub>Image credit: <a href="https://www.jpl.nasa.gov/news/twenty-years-of-tracking-near-earth-objects/">NASA / JPL-Caltech</a></sub>
 </p>
 
-**Description:**  
-The animation depicts a mapping of the positions of known near-Earth objects (NEOs) at points in time over the past 20 years, and finishes with a map of all known asteroids as of January 2018. Asteroid search teams supported by NASA's NEO Observations Program have found over 95 percent of near-Earth asteroids currently known. There are now over 18,000 known NEOs, and the discovery rate averages about several hundred new objects per year.
-
+---
 
 # **2. The DART Mission: Why It Mattered**
 
@@ -81,113 +77,294 @@ For many, DART is the first time they encounter physics not as abstract equation
 Below is **Section 3**, written in clear English for high-school students but rigorous enough to connect directly with your simulation’s physics engine.
 It is structured in four short subsections, each aligned with the concepts computed in **physics.js**, **charts.js**, and the UI.
 
----
-
-# **3. The Physics Behind DART and Orbital Motion**
-
-Understanding the DART mission—and the simulation in this project—requires a few essential physics ideas. These concepts help explain why asteroids move the way they do, how orbits are shaped, and how a small velocity change can redirect a celestial body.
-
----
-
-## **3.1 Central Gravitational Field**
-
-Every object with mass creates gravity. When one body is much more massive than another (like Didymos compared to Dimorphos), their interaction can be treated as a **central gravitational field**:
-
-* The massive body ( M ) sits at the center.
-* The smaller body ( m ) feels a force that always points toward ( M ).
-* The gravitational acceleration is given by:
-
-[
-\vec{a} = -,\frac{GM}{r^3},\vec{r}
-]
-
-This acceleration determines how the smaller body moves over time.
-Your simulation computes this at every time step (see *acc()* in physics.js).
+<p align="center">
+  <img src="scripts/img/DART-infographic.jpg" alt="Asteroid animation" width="750">
+  <br>
+  <em>Figure 2. llustration of how DART's impact altered the orbit of Dimorphos about Didymos. Telescopes on Earth are used to measure the change in the orbit of Dimorphos to evaluate the effectiveness of the DART impact.</em>
+  <br>
+  <sub>Image credit: <a href="https://dart.jhuapl.edu/Mission/index.php">DART Mission</a></sub>
+</p>
 
 ---
 
-## **3.2 Specific Mechanical Energy**
+# **3. Orbital Dynamics and Impact Physics**
 
-A body in orbit has two forms of energy:
+## **3.1 Equation of Motion in a Central Gravitational Field**
 
-* **Kinetic energy** from its speed
-* **Potential energy** from its distance from the central mass
+In a two-body system with ( M \gg m ), the motion can be described by the position vector ( \vec r(t) ) of the small body relative to the massive one. The gravitational force is:
 
-Combining them gives the **specific mechanical energy**:
+$$
+\vec F = -\frac{GMm}{r^3}\vec r
+$$
 
-[
-E = \frac{u^2}{2} - \frac{GM}{r}
-]
+where ( G ) is the gravitational constant and ( r = |\vec r| ).
+Newton’s second law gives:
 
-The sign of this energy tells us what kind of orbit a body follows:
+$$
+m,\ddot{\vec r} = -\frac{GMm}{r^3}\vec r
+\quad\Rightarrow\quad
+\ddot{\vec r} = -\frac{GM}{r^3}\vec r
+$$
 
-| Energy (E) | Type of motion                                      |
-| ---------- | --------------------------------------------------- |
-| (E < 0)    | Bound orbit (circle or ellipse)                     |
-| (E = 0)    | Parabolic escape (just enough energy to break free) |
-| (E > 0)    | Hyperbolic escape (unbound)                         |
+So the gravitational acceleration is:
 
-Inside the simulation, this value is calculated continuously and plotted in the **Energy chart**.
+$$
+\vec a = \ddot{\vec r} = -\frac{GM}{r^3}\vec r
+$$
 
----
+For a central force, the motion always lies in a plane. Using polar coordinates ( (r,\theta) ), the motion is determined by:
 
-## **3.3 Eccentricity and the Shape of the Orbit**
+* the initial distance ( r_0 )
+* the initial velocity vector ( \vec u_0 ), decomposed into radial and tangential components
 
-The **eccentricity** (e) determines the orbit’s shape.
-It depends on both energy and **angular momentum** (L):
-
-[
-e = \sqrt{1 + \frac{2EL^2}{(GM)^2}}
-]
-
-Different values of (e) correspond to the classic conic sections:
-
-* **(e = 0)** → perfect circle
-* **(0 < e < 1)** → ellipse
-* **(e = 1)** → parabola
-* **(e > 1)** → hyperbola
-
-The simulation uses this formula to classify the orbit in real time.
-This is what drives the “Orbit Type” indicator (*ellipse, parabolic, hyperbolic, fall*) you see in the UI.
-
-## **3.4 Angular Momentum and Why DART Worked**
-
-Angular momentum is defined as:
-
-[
-L = r , u_{\perp}
-]
-
-where (u_{\perp}) is the component of velocity perpendicular to the radius vector.
-In an isolated two-body system:
-
-> **Angular momentum is conserved.**
-
-This has two important consequences:
-
-1. If a body comes closer to the central mass, it must speed up.
-2. A spacecraft impact that changes the asteroid’s velocity also changes its angular momentum and therefore its orbital path.
-
-This is exactly what DART demonstrated:
-
-* A small spacecraft added an extremely small change in speed (Δu).
-* But because orbits are sensitive to initial conditions, this produced a measurable shift in Dimorphos’ orbital period.
-* The effect was even stronger due to ejecta leaving the asteroid, enhancing momentum transfer.
-
-Your simulation models these effects numerically: changing the starting speed (u) or the radius (r_0) immediately adjusts (E), (e), and the resulting trajectory.
+The tangensional component determines the **angular momentum**, which together with the total speed defines the orbit’s shape.
 
 ---
 
-## **3.5 Why These Concepts Matter for Students**
+## **3.2 Energy, Angular Momentum and Orbit Classification**
 
-This section ties the physics to real education:
+Two conserved quantities characterise motion under a (1/r^2) gravitational field:
 
-* Students see how core ideas from the curriculum—energy, forces, momentum—apply directly to a real NASA mission.
-* They can experiment with how small changes in velocity or distance reshape an orbit.
-* They discover how mathematical functions (like square roots, inverse-square laws, and conic sections) emerge naturally in physical problems.
-* They learn to read and interpret scientific graphs, a key skill in STEM education.
+1. **Specific mechanical energy**
+   $$
+   E = \frac{u^2}{2} - \frac{GM}{r}
+   $$
+   where ( u = |\vec u| ).
 
-Above all, students experience physics not as disconnected formulas, but as a dynamic system they can manipulate, test, and understand.
+2. **Specific angular momentum**
+   $$
+   h = r,u_\perp
+   $$
+   where ( u_\perp ) is the tangential component of velocity.
 
+Given initial conditions
+( r(0)=r_0 ) and ( u(0)=u_0 ) (tangential), we have:
 
+$$
+E = \frac{u_0^2}{2} - \frac{GM}{r_0},
+\qquad
+h = r_0 u_0
+$$
+
+The sign of ( E ) determines the orbit type:
+
+* ( E < 0 ): bound (circle or ellipse)
+* ( E = 0 ): parabola
+* ( E > 0 ): hyperbola
+
+Define the **circular** and **escape** speeds at radius ( r_0 ):
+
+$$
+u_{\text{circ}} = \sqrt{\frac{GM}{r_0}},
+\qquad
+u_{\text{esc}} = \sqrt{\frac{2GM}{r_0}}
+$$
+
+* If ( u_0 = u_{\text{circ}} ): circular orbit
+* If ( u_0 < u_{\text{circ}} ): ellipse
+* If ( u_{\text{circ}} < u_0 < u_{\text{esc}} ): eccentric ellipse
+* If ( u_0 = u_{\text{esc}} ): parabola
+* If ( u_0 > u_{\text{esc}} ): hyperbola
+
+---
+
+## **3.3 Eccentricity and Conic Sections**
+
+The **eccentricity** is given by:
+
+$$
+e = \sqrt{1 + \frac{2Eh^2}{(GM)^2}}
+$$
+
+Using the initial values:
+
+$$
+E = \frac{u_0^2}{2} - \frac{GM}{r_0},
+\qquad
+h = r_0 u_0
+$$
+
+we obtain:
+
+$$
+e = \sqrt{1 + \frac{2E r_0^2 u_0^2}{(GM)^2}}
+$$
+
+Orbit classification by eccentricity:
+
+* ( e=0 ): circle
+* ( 0<e<1 ): ellipse
+* ( e=1 ): parabola
+* ( e>1 ): hyperbola
+
+The conic equation in polar form is:
+
+$$
+r(\theta) = \frac{p}{1 + e\cos(\theta - \theta_0)}
+$$
+
+where the semi-latus rectum is
+
+$$
+p = \frac{h^2}{GM}
+$$
+
+The periapsis distance:
+
+$$
+r_{\text{peri}} = \frac{p}{1 + e}
+$$
+
+The apoapsis distance (for ellipses):
+
+$$
+r_{\text{apo}} = \frac{p}{1 - e}
+$$
+
+Thus, the initial distance and speed determine the full conic orbit.
+
+---
+
+## **3.4 Keplerian Motion in Bound Orbits**
+
+For ( E < 0 ) and ( e < 1 ), the orbit is an ellipse with semi-major axis:
+
+$$
+a = -\frac{GM}{2E}
+$$
+
+The orbital period follows Kepler’s 3rd law:
+
+$$
+T = 2\pi \sqrt{\frac{a^3}{GM}}
+$$
+
+The **mean motion** is:
+
+$$
+n = \sqrt{\frac{GM}{a^3}}
+$$
+
+The mean anomaly evolves as:
+
+$$
+M(t) = M_0 + n t
+$$
+
+Kepler’s equation relates ( M ) and the eccentric anomaly ( E ):
+
+$$
+M = E - e\sin E
+$$
+
+Parametric form of the ellipse:
+
+$$
+x' = a(\cos E - e),
+\qquad
+y' = a\sqrt{1 - e^2},\sin E
+$$
+
+The orbital radius:
+
+$$
+r = a(1 - e\cos E)
+$$
+
+Velocity components:
+
+$$
+v_{x'} = -\frac{\sqrt{GMa}}{r}\sin E,
+\qquad
+v_{y'} = \frac{\sqrt{GMa}}{r}\sqrt{1 - e^2}\cos E
+$$
+
+A rotation aligns the ellipse so that the initial point lies on the positive (x)-axis.
+
+---
+
+## **3.5 Radial Motion and Free Fall**
+
+If the initial tangential velocity is negligible ( u_0 \approx 0 ), then:
+
+$$
+h = r_0 u_0 \approx 0
+$$
+
+and the motion becomes **purely radial**.
+The energy equation reduces to:
+
+$$
+E = \frac{\dot r^2}{2} - \frac{GM}{r}
+$$
+
+The body accelerates inward and eventually reaches the central object if the energy allows it.
+
+---
+
+## **3.6 Physical Radius and Collision Criterion**
+
+Assuming a spherical central body of density ( \rho ):
+
+$$
+M = \frac{4}{3}\pi R^3 \rho
+\quad\Rightarrow\quad
+R = \left( \frac{3M}{4\pi\rho} \right)^{1/3}
+$$
+
+Collision occurs when the orbital radius satisfies:
+
+$$
+r(t) \le R
+$$
+
+For an elliptic orbit, collision occurs if:
+
+$$
+r_{\text{peri}} = \frac{p}{1+e} \le R
+$$
+
+---
+
+## **3.7 Kinetic Impact and Orbit Change**
+
+Consider a kinetic impactor of mass ( m_D ) colliding with a body of mass ( m ).
+Let the pre-impact velocities be ( \vec v ) and ( \vec v_D ).
+Assuming a perfectly inelastic collision, the post-impact velocity is:
+
+$$
+\vec v' = \frac{m\vec v + m_D \vec v_D}{m + m_D}
+$$
+
+with total mass:
+
+$$
+m' = m + m_D
+$$
+
+The new orbit is determined by ( \vec v' ) and the position ( \vec r ) at impact:
+
+$$
+E' = \frac{|\vec v'|^2}{2} - \frac{GM}{r}
+$$
+
+$$
+h' = r,u'_\perp
+$$
+
+and the new eccentricity:
+
+$$
+e' = \sqrt{1 + \frac{2E'h'^2}{(GM)^2}}
+$$
+
+A post-impact periapsis below the radius ( R ) indicates a collision:
+
+$$
+r'_{\text{peri}} \le R
+$$
+
+A positive new energy ( E' > 0 ) produces a hyperbolic escape trajectory.
+
+---
 
