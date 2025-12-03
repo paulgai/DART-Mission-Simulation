@@ -17,7 +17,7 @@ Understanding these ideas helps students connect classroom physics—gravity, en
 ---
 
 <p align="center">
-  <img src="scripts/img/asteroid.gif" alt="Asteroid animation" width="450">
+  <img src="scripts/img/imagesasteroid.gif" alt="Asteroid animation" width="450">
   <br>
   <em>Figure 1. Mapping of Near-Earth Objects (NEOs) discovered over the past 20 years.</em>
   <br>
