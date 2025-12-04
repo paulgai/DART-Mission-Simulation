@@ -1,3 +1,29 @@
+<p align="center">
+  <img src="scripts/img/screenshot_01.png" alt="DART Mission Simulation – main interface" width="900">
+  <br>
+  <em>Overview of the DART Mission Simulation interface.</em>
+</p>
+
+The goal of this project is to provide an interactive, browser-based simulation inspired by NASA’s **Double Asteroid Redirection Test (DART)**.  
+Students and teachers can use it to explore how gravity shapes asteroid orbits, how a kinetic impactor can change an orbit, and how these changes can be detected through brightness measurements, just as in real planetary-defence missions.
+
+The simulation runs entirely in the browser and lets the user adjust physical parameters (masses, distances, speeds), trigger a DART-like impact, and observe the resulting changes in orbit type, energy, eccentricity and light curve.  
+The rest of this document is organised as follows:
+
+* **Section 1** introduces asteroids and the basic ideas of planetary defence.  
+* **Section 2** summarises the DART mission and why it matters.  
+* **Section 3** presents the core physics of orbital motion and impact.  
+* **Section 4** explains how to use the simulation interface step by step.  
+* **Section 5** describes the technical implementation and how the code can be modified.
+
+<p align="center">
+  <a href="https://paulgai.github.io/DART-Mission-Simulation/" target="_blank"
+     style="display:inline-block;padding:10px 18px;background-color:#0b5ed7;color:#ffffff;border-radius:6px;text-decoration:none;font-weight:600;">
+    Open the DART Mission Simulation
+  </a>
+</p>
+
+
 # **1. Asteroids and Planetary Defense**
 
 Asteroids are rocky bodies that orbit the Sun, ranging in size from a few meters to hundreds of kilometers. Most of them pose no threat to Earth, yet their long-term trajectories can change due to gravitational interactions, collisions with smaller objects, or even the subtle push of sunlight (the Yarkovsky effect). For this reason, space agencies continuously track thousands of **Near-Earth Objects (NEOs)** to assess whether any of them could one day approach our planet too closely.
@@ -606,5 +632,16 @@ The file `scripts/i18n.json` contains a top-level object for each supported lang
   "es": { ... },
   ...
 }
+
+---
+
+
+## License and Attribution
+
+This project is released under the **MIT License**, which allows free use, modification and redistribution of the code for both educational and research purposes, as well as in derivative projects and applications. The full license text is included in the `LICENSE` file of the repository.
+
+Copyright © Pavlos Gaintatzis and Maria-Stavroula Belitsou
+
+When using or adapting this simulation in teaching materials, research projects or presentations, please retain the original copyright and license notice and consider citing the repository or acknowledging the authors by name. Contributions, forks and extensions are warmly encouraged, as long as they preserve the MIT License terms.
 
 
