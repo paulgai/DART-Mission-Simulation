@@ -1,3 +1,29 @@
+<p align="center">
+  <img src="scripts/img/screenshot_01.png" alt="DART Mission Simulation – main interface" width="900">
+  <br>
+  <em>Overview of the DART Mission Simulation interface.</em>
+</p>
+
+The goal of this project is to provide an interactive, browser-based simulation inspired by NASA’s **Double Asteroid Redirection Test (DART)**.  
+Students and teachers can use it to explore how gravity shapes asteroid orbits, how a kinetic impactor can change an orbit, and how these changes can be detected through brightness measurements, just as in real planetary-defence missions.
+
+The simulation runs entirely in the browser and lets the user adjust physical parameters (masses, distances, speeds), trigger a DART-like impact, and observe the resulting changes in orbit type, energy, eccentricity and light curve.  
+The rest of this document is organised as follows:
+
+* **Section 1** introduces asteroids and the basic ideas of planetary defence.  
+* **Section 2** summarises the DART mission and why it matters.  
+* **Section 3** presents the core physics of orbital motion and impact.  
+* **Section 4** explains how to use the simulation interface step by step.  
+* **Section 5** describes the technical implementation and how the code can be modified.
+
+<p align="center">
+  <a href="https://paulgai.github.io/DART-Mission-Simulation/" target="_blank"
+     style="display:inline-block;padding:10px 18px;background-color:#0b5ed7;color:#ffffff;border-radius:6px;text-decoration:none;font-weight:600;">
+    Open the DART Mission Simulation
+  </a>
+</p>
+
+
 # **1. Asteroids and Planetary Defense**
 
 Asteroids are rocky bodies that orbit the Sun, ranging in size from a few meters to hundreds of kilometers. Most of them pose no threat to Earth, yet their long-term trajectories can change due to gravitational interactions, collisions with smaller objects, or even the subtle push of sunlight (the Yarkovsky effect). For this reason, space agencies continuously track thousands of **Near-Earth Objects (NEOs)** to assess whether any of them could one day approach our planet too closely.
@@ -91,8 +117,6 @@ It is structured in four short subsections, each aligned with the concepts compu
 
 This section summarises the core physics of motion in a central gravitational field, the classification of orbits as conic sections, and the effect of a kinetic impact on an orbiting body. We consider a two-body system where one body is much more massive than the other, $` M \gg m `$, so that the massive body can be treated as fixed at the origin.
 
----
-
 ## 3.1 Equation of Motion in a Central Gravitational Field
 
 In a two-body system with $` M \gg m `$, the motion can be described by the position vector $`\vec r(t)`$ of the small body $`m`$ relative to the massive body $`M`$.  
@@ -127,8 +151,6 @@ Using polar coordinates $`(r,\theta)`$, the motion is determined by:
 * the **initial velocity vector** $`\vec u_0`$, decomposed into radial and tangential components
 
 The tangential component determines the **angular momentum**, which together with the total speed fixes the orbit’s shape.
-
----
 
 ## 3.2 Energy, Angular Momentum and Orbit Classification
 
@@ -186,8 +208,6 @@ Thus:
 * If $`u_0 = u_{\text{esc}}`$, the trajectory is parabolic.
 * If $`u_0 > u_{\text{esc}}`$, the trajectory is hyperbolic and the body escapes.
 
----
-
 ## 3.3 Eccentricity and Conic Sections
 
 Eccentricity is defined by:
@@ -230,8 +250,6 @@ r_{\text{apo}} = \frac{p}{1 - e}
 ```
 
 Thus $`r_0`$ and $`u_0`$ fully determine $`E`$, $`h`$, $`e`$, and therefore the entire conic orbit.
-
----
 
 ## 3.4 Keplerian Motion in Bound Orbits
 
@@ -291,8 +309,6 @@ v_{x'} = -\frac{\sqrt{GMa}}{r}\sin E
 v_{y'} = \frac{\sqrt{GMa}}{r}\sqrt{1 - e^2}\cos E
 ```
 
----
-
 ## 3.5 Radial Motion and Free Fall
 
 If the tangential velocity is negligible ($`u_0 \approx 0`$), then:
@@ -308,8 +324,6 @@ E = \frac{\dot r^2}{2} - \frac{GM}{r}
 ```
 
 A sufficiently low-energy trajectory results in inward fall and collision.
-
----
 
 ## 3.6 Physical Radius and Collision Criterion
 
@@ -336,8 +350,6 @@ For an ellipse, collision occurs if:
 ```math
 r_{\text{peri}} = \frac{p}{1+e} \le R
 ```
-
----
 
 ## 3.7 Kinetic Impact and Change of Orbit
 
@@ -375,5 +387,261 @@ A positive $`E'`$ with $`e' > 1`$ corresponds to hyperbolic escape.
 
 ---
 
+# 4. Using the DART Orbital Simulation Environment
+
+The interactive environment is organised into four numbered areas (see Figure 3):
+
+1. **Area 1 – Settings**  
+2. **Area 2 – Numerical orbit indicators**  
+3. **Area 3 – Time-dependent plots (charts)**  
+4. **Area 4 – Orbital visualisation canvas**
+
+<p align="center">
+  <img src="scripts/img/screenshot_02.png" alt="DART simulation interface with numbered areas 1–4" width="900">
+  <br>
+  <em>Figure 3. Layout of the DART mission simulation interface. Area 1: settings, Area 2: numerical indicators, Area 3: charts, Area 4: orbital visualisation.</em>
+</p>
+
+Each area focuses on a different aspect of orbital motion and impact physics, allowing students to adjust parameters, run the simulation and observe the physical consequences.
+
+## 4.1 Area 1 – Settings (Initial Conditions and Display Options)
+
+Area 1 contains all controls that define the initial state of the two-body system and the DART-like impact, as well as options that toggle visual elements on and off. Each slider or checkbox corresponds to a specific physical or graphical quantity.
+
+**Mass of the primary body (M)**  
+Sets the mass of the central asteroid (analogous to Didymos). A larger value of \(M\) strengthens the gravitational field and generally leads to shorter orbital periods for the same initial distance.
+
+**Mass of the orbiting body (m)**  
+Controls the mass of the moonlet (analogous to Dimorphos). Although the orbital motion is dominated by the primary (assumption \(M \gg m\)), the value of \(m\) affects how strongly the orbit changes after the impact, because momentum must be conserved in the collision.
+
+**Initial distance \(r_0\)**  
+Defines the starting radial distance of the small body from the primary. This distance is measured along the x-axis and is directly visible in Area 4 as the initial position of the moonlet.
+
+**Initial speed \(u_0\)**  
+Sets the magnitude of the initial orbital speed. In this model the initial velocity is always **perpendicular** to the radius vector \( \vec r \), so the motion starts with purely tangential velocity and **no radial component**. This corresponds to the standard Keplerian initial condition used in orbital mechanics.
+
+**Simulation speed**  
+A time-scaling factor that speeds up or slows down the animation. Changing this value alters how fast the simulation runs on screen but does not change the underlying physics.
+
+**Spacecraft mass \(m_D\)**  
+The mass of the impacting spacecraft. Together with the spacecraft speed, it determines how much momentum is delivered to the moonlet during the collision.
+
+**Spacecraft speed \(u_D\)**  
+The relative speed of the spacecraft at the moment of impact.
+
+> **Model assumption – head-on impact:**  
+> The simulation always treats the collision as **head-on**. The spacecraft’s velocity is taken to be exactly opposite to the instantaneous velocity of the moonlet. This means that, at impact, the spacecraft moves along the same line as the moonlet but in the reverse direction. This idealised configuration maximises the change in orbital speed and simplifies the analysis of momentum transfer.
+
+**Display options**  
+Several checkboxes allow students to add or remove visual layers in Area 4:
+
+- **Grid** – draws a background grid in world units to give a sense of distance.  
+- **Body images** – shows the asteroids as scaled images instead of simple points; their radii are consistent with their masses and a chosen density.  
+- **Velocity vector** – displays the instantaneous velocity of the moonlet as an arrow.  
+- **Distance M–m** – draws the line segment joining the primary and the moonlet to emphasise the current separation.  
+- **Gravitational forces** – shows force vectors acting on the bodies.  
+- **Dashed orbit (Orbit prediction)** – displays the analytic conic section that corresponds to the initial orbital parameters.  
+- **Orbit trail** – shows the path actually followed by the moonlet during the numerical integration.  
+- **Orbit characteristics** – reveals additional geometric information for closed orbits, such as the semi-major and semi-minor axes and the foci.  
+- **Star field** – adds a decorative starry background that does not affect the physics.
+
+By combining these options, students can progressively build up the visual representation of the system and focus on the features that are most relevant to the concept being taught.
+
+## 4.2 Area 2 – Numerical Orbit Indicators
+
+Area 2 presents the key numerical quantities that describe the orbit at any given instant. These values are updated in real time as the simulation runs and change immediately after an impact.
+
+**Orbit type**  
+Classifies the trajectory as an ellipse, circle, parabola, hyperbola, or radial fall. The classification is based on the sign of the specific mechanical energy and the value of the eccentricity:
+
+- \(E < 0\), \(0 < e < 1\): elliptical orbit  
+- \(E < 0\), \(e = 0\): circular orbit  
+- \(E = 0\), \(e = 1\): parabolic trajectory  
+- \(E > 0\), \(e > 1\): hyperbolic escape  
+- negligible angular momentum: radial fall towards the primary
+
+**Time**  
+Shows the elapsed simulation time since the start of the run.
+
+**Circular and escape speeds**  
+Displays the theoretical circular and escape speeds at the initial radius \(r_0\),
+
+```math
+u_{\text{circ}} = \sqrt{\frac{GM}{r_0}}, \qquad
+u_{\text{esc}} = \sqrt{\frac{2GM}{r_0}},
+```
+for direct comparison with the chosen initial speed \(u_0\).
+
+**Specific mechanical energy**  
+Reports the value of
+```math
+E = \frac{u^2}{2} - \frac{GM}{r},
+```
+per unit mass of the moonlet. This quantity is central for classifying orbits and for understanding how the impact alters the system.
+
+**Distance \(M\)–\(m\)**  
+The instantaneous separation \(r(t)\) between the two bodies.
+
+**Eccentricity \(e\)**  
+The dimensionless number that measures how “stretched” the orbit is. After the impact, students can immediately see how \(e\) changes and whether the orbit becomes more or less eccentric.
+
+**Orbital period**  
+Displayed only when the orbit is bound, elliptical, and does not intersect the primary’s surface. It represents the time required for one complete revolution.
+
+## 4.3 Area 3 – Time-Dependent Plots
+
+Area 3 contains interactive graphs that show how key physical quantities evolve with time. The user can zoom and pan within each graph to study specific intervals in more detail.
+
+**Energy plot – \(E(t), K(t), U(t)\)**  
+Shows the kinetic energy \(K(t)\), gravitational potential energy \(U(t)\), and total specific mechanical energy \(E(t) = K(t) + U(t)\). For an isolated two-body system the total energy remains constant. In the simulation this constancy is visible except at the instant of impact, when the spacecraft delivers momentum to the moonlet and the orbit is changed.
+
+**Distance plot – \(r(t)\)**  
+Displays the radial distance from the primary as a function of time. Elliptical orbits appear as periodic oscillations between periapsis and apoapsis; fall trajectories show a continuous decrease in distance; hyperbolic trajectories show the moonlet moving away to infinity.
+
+**Speed plot – \(u(t)\)**  
+Shows the magnitude of the orbital speed. This graph helps students see, for example, that speed is highest near periapsis and lowest near apoapsis, and how the impact modifies the speed curve.
+
+**Brightness plot – \(L(t)\)**  
+Simulates photometric observations similar to those used in the real DART mission.
+
+> **Geometric assumption – position of Earth:**  
+> The Earth is assumed to lie far away along the **positive y-axis** of the simulation. In other words, the observer looks at the system from “above” along the direction of the y-axis in Area 4.
+
+With this geometry, the total brightness of the Didymos–Dimorphos system decreases slightly whenever the moonlet passes **in front of** the primary body as seen from Earth. In the simulation:
+
+- When the moonlet crosses the y-axis with a positive y-coordinate and its projected x-coordinate lies within the projected disk of the primary,  
+- The brightness \(L(t)\) drops to a value slightly below 1 (for example, to about \(0.95\)).
+
+This behaviour reproduces the idea of a **light curve**: by observing periodic dips in brightness, astronomers can infer the orbital period and study changes in the orbit before and after the impact.
+
+## 4.4 Area 4 – Orbital Visualisation Canvas
+
+Area 4 is the main graphical canvas where the motion of the two bodies and the effect of the impact are visualised.
+
+**Orbital motion**  
+The moonlet’s position is updated by numerically integrating Newton’s law
+
+```math
+\vec a = -\frac{GM}{r^3}\,\vec r
+```
+
+with small time steps. The path traced out by the moonlet forms the **orbit trail**, which may be open or closed depending on the energy and eccentricity.
+
+**Analytic conic preview**  
+A dashed curve shows the ideal conic section (ellipse, parabola, or hyperbola) computed directly from the initial conditions \(r_0\) and \(u_0\). This geometric orbit does not yet include the effect of the impact. Comparing the dashed preview with the post-impact trail helps students distinguish between the “original” and “modified” orbits.
+
+**Body sizes and collision radius**  
+When body images are enabled, the physical radii of the asteroids are calculated from their masses, assuming a fixed density. This defines a **collision radius** around the primary. If the orbit passes inside this radius, a collision with the central body is considered to occur.
+
+**Visualisation of the impact**  
+When the **Impact** button is pressed:
+
+1. The spacecraft collides head-on with the moonlet, with velocity opposite to its instantaneous velocity.  
+2. A new velocity is computed from conservation of momentum, and the mass of the moonlet effectively includes the spacecraft.  
+3. The simulation immediately recomputes the orbital energy, angular momentum and eccentricity.  
+4. The orbit trail now follows the **new** trajectory, which may be more or less eccentric, or even switch from bound to unbound (or vice versa), depending on the chosen settings.
+
+These visual cues in Area 4 make the abstract equations of Sections 3.1–3.7 tangible and help students see, step by step, how a relatively small change in velocity can result in a measurable change in orbital motion.
+
+## 4.5 Summary of Built-In Physical Assumptions
+
+To keep the simulation conceptually clear and suitable for classroom use, the following simplifying assumptions are built into the model:
+
+1. **The initial velocity is always perpendicular to the radius vector**, so the moonlet begins with purely tangential motion and no radial component.  
+2. **The impact is always head-on**, with the spacecraft velocity directly opposite to the moonlet’s instantaneous velocity at the moment of collision.  
+3. **The Earth is located along the positive y-axis**, so that dips in the brightness curve correspond to the moonlet passing in front of the primary body from the observer’s point of view.
+
+These assumptions allow students to focus on the core ideas of planetary defence: how gravity shapes orbits, how kinetic impactors work, and how small changes in velocity can be detected through careful observation of light curves.
+
+---
+
+# 5. Technical Implementation
+
+This section summarises how the DART simulation was implemented: the technologies used, the file structure, the multilingual design, and how the application can be run and modified.
+
+## 5.1 Technology Stack
+
+The simulation is a **purely client-side web application**. It runs entirely in the browser and does not require a server-side component or database.
+
+- **HTML5** – defines the page structure and the three main panels (Areas 1–4) of the interface.:contentReference[oaicite:0]{index=0}  
+- **CSS** – provides layout and styling (dark theme, responsive panels, controls, and status cards).  
+- **Modern JavaScript (ES modules)** – implements the physics model, numerical integration, drawing routines, user interface logic, orbit control and chart updates. Modules are loaded via `type="module"` in `index.html`.:contentReference[oaicite:1]{index=1}  
+- **Apache ECharts** – an external plotting library loaded from a CDN, used to render the four interactive charts for energy, distance, speed and brightness.  
+
+Because ES modules and `fetch()` are used, the simulation is intended to run from a simple HTTP server (local or online) rather than directly from the `file://` protocol.
+
+## 5.2 File Structure and Module Responsibilities
+
+At the top level the project contains:
+
+- `index.html` – main HTML file that defines the layout, includes the language selector, the three UI panels (Areas 1–3) and the `<canvas>` for Area 4. It also loads ECharts, the internationalisation script and the main JS module.:contentReference[oaicite:3]{index=3}  
+- `style.css` – the stylesheet (not shown here) responsible for the dark theme, grid-based layout, responsive behaviour, and visual details (cards, pills, sliders).
+
+All JavaScript files are placed inside the `scripts/` folder:
+
+- `config.js` – holds physical constants, simulation limits and rendering parameters (e.g. `G`, fixed time step, maximum number of steps, crash radius, maximum radius), as well as a function `createInitialState()` that initialises the simulation state (masses, initial distance, initial speed, spacecraft parameters, camera settings and various display flags).:contentReference[oaicite:4]{index=4}  
+- `physics.js` – implements the core physics of a central gravitational field and the geometric preview of the conic orbit. It:
+  - computes basic orbital quantities (energy, angular momentum, eccentricity, orbit type),  
+  - defines the acceleration `acc(state, r)` used by the integrator,  
+  - derives the physical collision radius from the mass and an assumed density,  
+  - provides functions to precompute the preview trajectory and to compute summary parameters for the UI.  
+- `draw.js` – handles all drawing on the `<canvas>`:
+  - grid and axes,
+  - central body and moonlet (either as small points or as images),
+  - trajectory trail,
+  - predicted conic orbit,
+  - velocity vectors, force indicators and geometric constructions (e.g. semi-major axis, foci, etc.).  
+- `ui.js` – connects the DOM elements (sliders, checkboxes, buttons) with the simulation state. It reads user input from Area 1, updates labels and numeric readouts, and exposes helper functions such as `initUI()` and `updateOrbitUI()` for use by other modules.:contentReference[oaicite:6]{index=6}  
+- `orbitControl.js` – provides higher-level operations on the orbit:
+  - `resetToInitial(state)` recomputes the preview trajectory, resets time, places the moonlet back at \(r_0\) with the initial tangential speed, clears the trail and updates the UI,  
+  - `autoFit(state, canvas)` adjusts the zoom and centre so that the orbit fits neatly in the canvas.:contentReference[oaicite:7]{index=7}  
+- `charts.js` – creates and manages the four ECharts plots:
+  - energy plot \(E(t), K(t), U(t)\),
+  - distance plot \(r(t)\),
+  - speed plot \(u(t)\),
+  - brightness plot \(L(t)\).  
+  It defines common chart options (dark colours, tooltips, zoom/pan controls), buffers incoming data points, and periodically refreshes the plots while keeping a maximum number of stored samples for performance.  
+- `i18n.js` and `i18n.json` – implement the multilingual layer (see Section 5.3).  
+
+The `scripts/img/` directory contains the graphical assets used in the interface (asteroid images, DART infographic, UI screenshots).
+
+The central coordinator is:
+
+- `main.js` – the main entry point. It:
+  - imports the configuration, drawing, physics, orbit control, charts and UI modules,  
+  - creates the initial state via `createInitialState()`,  
+  - initialises the charts and UI,  
+  - sets up event listeners for mouse wheel zoom and panning on the canvas,  
+  - runs the animation loop with `requestAnimationFrame`, updating the physical state, drawing the new frame in Area 4 and sending samples to the charts in Area 3,  
+  - keeps the numeric indicators in Area 2 up to date (energy, orbital period, orbit type).:contentReference[oaicite:10]{index=10}  
+
+This modular design separates concerns: physics, drawing, UI, charts and internationalisation are implemented in distinct files, making the codebase easier to understand and extend.
+
+## 5.3 Multilingual Design
+
+The simulation is fully multilingual and supports **eleven languages** (English, Greek, Spanish, French, German, Brazilian Portuguese, Italian, Arabic, Simplified Chinese, Japanese and Korean). All translations are stored in a single JSON file and applied dynamically at runtime.  
+
+### 5.3.1 Language Resources
+
+The file `scripts/i18n.json` contains a top-level object for each supported language:
+
+```json
+{
+  "en": { ... },
+  "el": { ... },
+  "es": { ... },
+  ...
+}
+```
+
+---
+
+## License and Attribution
+
+This project is released under the **MIT License**, which allows free use, modification and redistribution of the code for both educational and research purposes, as well as in derivative projects and applications. The full license text is included in the `LICENSE` file of the repository.
+
+Copyright © Pavlos Gaintatzis and Maria-Stavroula Belitsou
+
+When using or adapting this simulation in teaching materials, research projects or presentations, please retain the original copyright and license notice and consider citing the repository or acknowledging the authors by name. Contributions, forks and extensions are warmly encouraged, as long as they preserve the MIT License terms.
 
 
