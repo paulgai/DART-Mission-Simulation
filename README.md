@@ -87,284 +87,293 @@ It is structured in four short subsections, each aligned with the concepts compu
 
 ---
 
-# **3. Orbital Dynamics and Impact Physics**
+# 3. Orbital Dynamics and Impact Physics
 
-## **3.1 Equation of Motion in a Central Gravitational Field**
-
-In a two-body system with ( M \gg m ), the motion can be described by the position vector ( \vec r(t) ) of the small body relative to the massive one. The gravitational force is:
-
-$$
-\vec F = -\frac{GMm}{r^3}\vec r
-$$
-
-where ( G ) is the gravitational constant and ( r = |\vec r| ).
-Newton’s second law gives:
-
-$$
-m,\ddot{\vec r} = -\frac{GMm}{r^3}\vec r
-\quad\Rightarrow\quad
-\ddot{\vec r} = -\frac{GM}{r^3}\vec r
-$$
-
-So the gravitational acceleration is:
-
-$$
-\vec a = \ddot{\vec r} = -\frac{GM}{r^3}\vec r
-$$
-
-For a central force, the motion always lies in a plane. Using polar coordinates ( (r,\theta) ), the motion is determined by:
-
-* the initial distance ( r_0 )
-* the initial velocity vector ( \vec u_0 ), decomposed into radial and tangential components
-
-The tangensional component determines the **angular momentum**, which together with the total speed defines the orbit’s shape.
+This section summarises the core physics of motion in a central gravitational field, the classification of orbits as conic sections, and the effect of a kinetic impact on an orbiting body. We consider a two-body system where one body is much more massive than the other, $` M \gg m `$, so that the massive body can be treated as fixed at the origin.
 
 ---
 
-## **3.2 Energy, Angular Momentum and Orbit Classification**
+## 3.1 Equation of Motion in a Central Gravitational Field
 
-Two conserved quantities characterise motion under a (1/r^2) gravitational field:
+In a two-body system with $` M \gg m `$, the motion can be described by the position vector $`\vec r(t)`$ of the small body $`m`$ relative to the massive body $`M`$.  
+The gravitational force is:
 
-1. **Specific mechanical energy**
-   $$
-   E = \frac{u^2}{2} - \frac{GM}{r}
-   $$
-   where ( u = |\vec u| ).
+```math
+\vec{F} = -\frac{GMm}{r^3}\,\vec{r}
+````
 
-2. **Specific angular momentum**
-   $$
-   h = r,u_\perp
-   $$
-   where ( u_\perp ) is the tangential component of velocity.
+where $`G`$ is the gravitational constant and $`r = |\vec r|`$.
 
-Given initial conditions
-( r(0)=r_0 ) and ( u(0)=u_0 ) (tangential), we have:
+Newton’s second law gives the equation of motion:
 
-$$
+```math
+m\ddot{\vec{r}} = -\frac{GMm}{r^3}\vec{r}
+\quad\Rightarrow\quad
+\ddot{\vec{r}} = -\frac{GM}{r^3}\vec{r}
+```
+
+Thus the gravitational acceleration is:
+
+```math
+\vec{a} = -\frac{GM}{r^3}\vec{r}
+```
+
+This is the standard central-force law for the Newtonian two-body problem.
+
+Because the force is central, the motion always lies in a plane.
+Using polar coordinates $`(r,\theta)`$, the motion is determined by:
+
+* the **initial distance** $`r_0`$
+* the **initial velocity vector** $`\vec u_0`$, decomposed into radial and tangential components
+
+The tangential component determines the **angular momentum**, which together with the total speed fixes the orbit’s shape.
+
+---
+
+## 3.2 Energy, Angular Momentum and Orbit Classification
+
+Two conserved quantities completely characterise the orbit in a central $`1/r^2`$ field:
+
+### 1. Specific mechanical energy
+
+```math
+E = \frac{u^2}{2} - \frac{GM}{r}
+```
+
+where $`u = |\vec u|`$ is the speed.
+
+### 2. Specific angular momentum
+
+```math
+h = r\,u_{\perp}
+```
+
+where $`u_\perp`$ is the tangential velocity component.
+
+Given initial conditions:
+
+```math
+r(0) = r_0,\qquad u(0) = u_0
+```
+
+with $`u_0`$ tangential, we obtain:
+
+```math
 E = \frac{u_0^2}{2} - \frac{GM}{r_0},
 \qquad
 h = r_0 u_0
-$$
+```
 
-The sign of ( E ) determines the orbit type:
+Orbit type follows from $`E`$:
 
-* ( E < 0 ): bound (circle or ellipse)
-* ( E = 0 ): parabola
-* ( E > 0 ): hyperbola
+* $`E < 0`$ : bound orbit (circle or ellipse)
+* $`E = 0`$ : parabolic trajectory
+* $`E > 0`$ : hyperbolic trajectory
 
-Define the **circular** and **escape** speeds at radius ( r_0 ):
+Circular and escape speeds:
 
-$$
+```math
 u_{\text{circ}} = \sqrt{\frac{GM}{r_0}},
 \qquad
 u_{\text{esc}} = \sqrt{\frac{2GM}{r_0}}
-$$
+```
 
-* If ( u_0 = u_{\text{circ}} ): circular orbit
-* If ( u_0 < u_{\text{circ}} ): ellipse
-* If ( u_{\text{circ}} < u_0 < u_{\text{esc}} ): eccentric ellipse
-* If ( u_0 = u_{\text{esc}} ): parabola
-* If ( u_0 > u_{\text{esc}} ): hyperbola
+Thus:
+
+* If $`u_0 = u_{\text{circ}}`$, the orbit is exactly circular.
+* If $`u_0 < u_{\text{circ}}`$, the orbit is an ellipse.
+* If $`u_{\text{circ}} < u_0 < u_{\text{esc}}`$, the ellipse is more eccentric.
+* If $`u_0 = u_{\text{esc}}`$, the trajectory is parabolic.
+* If $`u_0 > u_{\text{esc}}`$, the trajectory is hyperbolic and the body escapes.
 
 ---
 
-## **3.3 Eccentricity and Conic Sections**
+## 3.3 Eccentricity and Conic Sections
 
-The **eccentricity** is given by:
+Eccentricity is defined by:
 
-$$
+```math
 e = \sqrt{1 + \frac{2Eh^2}{(GM)^2}}
-$$
+```
 
-Using the initial values:
+Using initial conditions:
 
-$$
-E = \frac{u_0^2}{2} - \frac{GM}{r_0},
-\qquad
-h = r_0 u_0
-$$
-
-we obtain:
-
-$$
+```math
 e = \sqrt{1 + \frac{2E r_0^2 u_0^2}{(GM)^2}}
-$$
+```
 
-Orbit classification by eccentricity:
+Interpretation of $`e`$:
 
-* ( e=0 ): circle
-* ( 0<e<1 ): ellipse
-* ( e=1 ): parabola
-* ( e>1 ): hyperbola
+* $`e = 0`$ → **circle**
+* $`0 < e < 1`$ → **ellipse**
+* $`e = 1`$ → **parabola**
+* $`e > 1`$ → **hyperbola**
 
-The conic equation in polar form is:
+The polar form of the orbit:
 
-$$
+```math
 r(\theta) = \frac{p}{1 + e\cos(\theta - \theta_0)}
-$$
+```
 
-where the semi-latus rectum is
+with:
 
-$$
+```math
 p = \frac{h^2}{GM}
-$$
+```
 
-The periapsis distance:
+Periapsis and apoapsis:
 
-$$
-r_{\text{peri}} = \frac{p}{1 + e}
-$$
-
-The apoapsis distance (for ellipses):
-
-$$
+```math
+r_{\text{peri}} = \frac{p}{1 + e},
+\qquad
 r_{\text{apo}} = \frac{p}{1 - e}
-$$
+```
 
-Thus, the initial distance and speed determine the full conic orbit.
+Thus $`r_0`$ and $`u_0`$ fully determine $`E`$, $`h`$, $`e`$, and therefore the entire conic orbit.
 
 ---
 
-## **3.4 Keplerian Motion in Bound Orbits**
+## 3.4 Keplerian Motion in Bound Orbits
 
-For ( E < 0 ) and ( e < 1 ), the orbit is an ellipse with semi-major axis:
+For bound orbits ($`E < 0`$ and $`e < 1`$), the trajectory is an ellipse with semi-major axis:
 
-$$
+```math
 a = -\frac{GM}{2E}
-$$
+```
 
-The orbital period follows Kepler’s 3rd law:
+Kepler’s Third Law gives the orbital period:
 
-$$
-T = 2\pi \sqrt{\frac{a^3}{GM}}
-$$
+```math
+T = 2\pi\sqrt{\frac{a^3}{GM}}
+```
 
-The **mean motion** is:
+Mean motion:
 
-$$
+```math
 n = \sqrt{\frac{GM}{a^3}}
-$$
+```
 
-The mean anomaly evolves as:
+Mean anomaly:
 
-$$
+```math
 M(t) = M_0 + n t
-$$
+```
 
-Kepler’s equation relates ( M ) and the eccentric anomaly ( E ):
+Kepler’s equation:
 
-$$
+```math
 M = E - e\sin E
-$$
+```
 
-Parametric form of the ellipse:
+Parametric form:
 
-$$
-x' = a(\cos E - e),
-\qquad
-y' = a\sqrt{1 - e^2},\sin E
-$$
+```math
+x' = a(\cos E - e)
+```
 
-The orbital radius:
+```math
+y' = a\sqrt{1 - e^2}\sin E
+```
 
-$$
+Radius:
+
+```math
 r = a(1 - e\cos E)
-$$
+```
 
 Velocity components:
 
-$$
-v_{x'} = -\frac{\sqrt{GMa}}{r}\sin E,
-\qquad
+```math
+v_{x'} = -\frac{\sqrt{GMa}}{r}\sin E
+```
+
+```math
 v_{y'} = \frac{\sqrt{GMa}}{r}\sqrt{1 - e^2}\cos E
-$$
-
-A rotation aligns the ellipse so that the initial point lies on the positive (x)-axis.
+```
 
 ---
 
-## **3.5 Radial Motion and Free Fall**
+## 3.5 Radial Motion and Free Fall
 
-If the initial tangential velocity is negligible ( u_0 \approx 0 ), then:
+If the tangential velocity is negligible ($`u_0 \approx 0`$), then:
 
-$$
+```math
 h = r_0 u_0 \approx 0
-$$
+```
 
-and the motion becomes **purely radial**.
-The energy equation reduces to:
+The orbit becomes nearly radial. The motion satisfies:
 
-$$
+```math
 E = \frac{\dot r^2}{2} - \frac{GM}{r}
-$$
+```
 
-The body accelerates inward and eventually reaches the central object if the energy allows it.
+A sufficiently low-energy trajectory results in inward fall and collision.
 
 ---
 
-## **3.6 Physical Radius and Collision Criterion**
+## 3.6 Physical Radius and Collision Criterion
 
-Assuming a spherical central body of density ( \rho ):
+Assuming a spherical body of density $`\rho`$:
 
-$$
+```math
 M = \frac{4}{3}\pi R^3 \rho
-\quad\Rightarrow\quad
-R = \left( \frac{3M}{4\pi\rho} \right)^{1/3}
-$$
+```
 
-Collision occurs when the orbital radius satisfies:
+Thus:
 
-$$
+```math
+R = \left(\frac{3M}{4\pi\rho}\right)^{1/3}
+```
+
+Collision occurs when:
+
+```math
 r(t) \le R
-$$
+```
 
-For an elliptic orbit, collision occurs if:
+For an ellipse, collision occurs if:
 
-$$
+```math
 r_{\text{peri}} = \frac{p}{1+e} \le R
-$$
+```
 
 ---
 
-## **3.7 Kinetic Impact and Orbit Change**
+## 3.7 Kinetic Impact and Change of Orbit
 
-Consider a kinetic impactor of mass ( m_D ) colliding with a body of mass ( m ).
-Let the pre-impact velocities be ( \vec v ) and ( \vec v_D ).
-Assuming a perfectly inelastic collision, the post-impact velocity is:
+For a perfectly inelastic impact:
 
-$$
-\vec v' = \frac{m\vec v + m_D \vec v_D}{m + m_D}
-$$
+```math
+\vec{v}' = \frac{m\vec{v} + m_D\vec{v}_D}{m + m_D}
+```
 
-with total mass:
+New specific mechanical energy:
 
-$$
-m' = m + m_D
-$$
+```math
+E' = \frac{\|\vec{v}'\|^2}{2} - \frac{GM}{r}
+```
 
-The new orbit is determined by ( \vec v' ) and the position ( \vec r ) at impact:
+New angular momentum:
 
-$$
-E' = \frac{|\vec v'|^2}{2} - \frac{GM}{r}
-$$
+```math
+h' = r\,u'_{\perp}
+```
 
-$$
-h' = r,u'_\perp
-$$
+New eccentricity:
 
-and the new eccentricity:
+```math
+e' = \sqrt{1 + \frac{2E' h'^2}{(GM)^2}}
+```
 
-$$
-e' = \sqrt{1 + \frac{2E'h'^2}{(GM)^2}}
-$$
+Collision if:
 
-A post-impact periapsis below the radius ( R ) indicates a collision:
-
-$$
+```math
 r'_{\text{peri}} \le R
-$$
+```
 
-A positive new energy ( E' > 0 ) produces a hyperbolic escape trajectory.
+A positive $`E'`$ with $`e' > 1`$ corresponds to hyperbolic escape.
 
 ---
+
+
 
