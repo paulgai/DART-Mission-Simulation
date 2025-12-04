@@ -375,5 +375,178 @@ A positive $`E'`$ with $`e' > 1`$ corresponds to hyperbolic escape.
 
 ---
 
+# 4. Using the DART Orbital Simulation Environment
+
+The interactive environment is organised into four numbered areas (see Figure 3):
+
+1. **Area 1 – Settings**  
+2. **Area 2 – Numerical orbit indicators**  
+3. **Area 3 – Time-dependent plots (charts)**  
+4. **Area 4 – Orbital visualisation canvas**
+
+<p align="center">
+  <img src="scripts/img/screenshot_02.png" alt="DART simulation interface with numbered areas 1–4" width="900">
+  <br>
+  <em>Figure 3. Layout of the DART mission simulation interface. Area 1: settings, Area 2: numerical indicators, Area 3: charts, Area 4: orbital visualisation.</em>
+</p>
+
+Each area focuses on a different aspect of orbital motion and impact physics, allowing students to adjust parameters, run the simulation and observe the physical consequences.
+
+---
+
+## 4.1 Area 1 – Settings (Initial Conditions and Display Options)
+
+Area 1 contains all controls that define the initial state of the two-body system and the DART-like impact, as well as options that toggle visual elements on and off. Each slider or checkbox corresponds to a specific physical or graphical quantity.
+
+**Mass of the primary body (M)**  
+Sets the mass of the central asteroid (analogous to Didymos). A larger value of \(M\) strengthens the gravitational field and generally leads to shorter orbital periods for the same initial distance.
+
+**Mass of the orbiting body (m)**  
+Controls the mass of the moonlet (analogous to Dimorphos). Although the orbital motion is dominated by the primary (assumption \(M \gg m\)), the value of \(m\) affects how strongly the orbit changes after the impact, because momentum must be conserved in the collision.
+
+**Initial distance \(r_0\)**  
+Defines the starting radial distance of the small body from the primary. This distance is measured along the x-axis and is directly visible in Area 4 as the initial position of the moonlet.
+
+**Initial speed \(u_0\)**  
+Sets the magnitude of the initial orbital speed. In this model the initial velocity is always **perpendicular** to the radius vector \( \vec r \), so the motion starts with purely tangential velocity and **no radial component**. This corresponds to the standard Keplerian initial condition used in orbital mechanics.
+
+**Simulation speed**  
+A time-scaling factor that speeds up or slows down the animation. Changing this value alters how fast the simulation runs on screen but does not change the underlying physics.
+
+**Spacecraft mass \(m_D\)**  
+The mass of the impacting spacecraft. Together with the spacecraft speed, it determines how much momentum is delivered to the moonlet during the collision.
+
+**Spacecraft speed \(u_D\)**  
+The relative speed of the spacecraft at the moment of impact.
+
+> **Model assumption – head-on impact:**  
+> The simulation always treats the collision as **head-on**. The spacecraft’s velocity is taken to be exactly opposite to the instantaneous velocity of the moonlet. This means that, at impact, the spacecraft moves along the same line as the moonlet but in the reverse direction. This idealised configuration maximises the change in orbital speed and simplifies the analysis of momentum transfer.
+
+**Display options**  
+Several checkboxes allow students to add or remove visual layers in Area 4:
+
+- **Grid** – draws a background grid in world units to give a sense of distance.  
+- **Body images** – shows the asteroids as scaled images instead of simple points; their radii are consistent with their masses and a chosen density.  
+- **Velocity vector** – displays the instantaneous velocity of the moonlet as an arrow.  
+- **Distance M–m** – draws the line segment joining the primary and the moonlet to emphasise the current separation.  
+- **Gravitational forces** – shows force vectors acting on the bodies.  
+- **Dashed orbit (Orbit prediction)** – displays the analytic conic section that corresponds to the initial orbital parameters.  
+- **Orbit trail** – shows the path actually followed by the moonlet during the numerical integration.  
+- **Orbit characteristics** – reveals additional geometric information for closed orbits, such as the semi-major and semi-minor axes and the foci.  
+- **Star field** – adds a decorative starry background that does not affect the physics.
+
+By combining these options, students can progressively build up the visual representation of the system and focus on the features that are most relevant to the concept being taught.
+
+---
+
+## 4.2 Area 2 – Numerical Orbit Indicators
+
+Area 2 presents the key numerical quantities that describe the orbit at any given instant. These values are updated in real time as the simulation runs and change immediately after an impact.
+
+**Orbit type**  
+Classifies the trajectory as an ellipse, circle, parabola, hyperbola, or radial fall. The classification is based on the sign of the specific mechanical energy and the value of the eccentricity:
+
+- \(E < 0\), \(0 < e < 1\): elliptical orbit  
+- \(E < 0\), \(e = 0\): circular orbit  
+- \(E = 0\), \(e = 1\): parabolic trajectory  
+- \(E > 0\), \(e > 1\): hyperbolic escape  
+- negligible angular momentum: radial fall towards the primary
+
+**Time**  
+Shows the elapsed simulation time since the start of the run.
+
+**Circular and escape speeds**  
+Displays the theoretical circular and escape speeds at the initial radius \(r_0\),
+$$
+u_{\text{circ}} = \sqrt{\frac{GM}{r_0}}, \qquad
+u_{\text{esc}} = \sqrt{\frac{2GM}{r_0}},
+$$
+for direct comparison with the chosen initial speed \(u_0\).
+
+**Specific mechanical energy**  
+Reports the value of
+$$
+E = \frac{u^2}{2} - \frac{GM}{r},
+$$
+per unit mass of the moonlet. This quantity is central for classifying orbits and for understanding how the impact alters the system.
+
+**Distance \(M\)–\(m\)**  
+The instantaneous separation \(r(t)\) between the two bodies.
+
+**Eccentricity \(e\)**  
+The dimensionless number that measures how “stretched” the orbit is. After the impact, students can immediately see how \(e\) changes and whether the orbit becomes more or less eccentric.
+
+**Orbital period**  
+Displayed only when the orbit is bound, elliptical, and does not intersect the primary’s surface. It represents the time required for one complete revolution.
+
+---
+
+## 4.3 Area 3 – Time-Dependent Plots
+
+Area 3 contains interactive graphs that show how key physical quantities evolve with time. The user can zoom and pan within each graph to study specific intervals in more detail.
+
+**Energy plot – \(E(t), K(t), U(t)\)**  
+Shows the kinetic energy \(K(t)\), gravitational potential energy \(U(t)\), and total specific mechanical energy \(E(t) = K(t) + U(t)\). For an isolated two-body system the total energy remains constant. In the simulation this constancy is visible except at the instant of impact, when the spacecraft delivers momentum to the moonlet and the orbit is changed.
+
+**Distance plot – \(r(t)\)**  
+Displays the radial distance from the primary as a function of time. Elliptical orbits appear as periodic oscillations between periapsis and apoapsis; fall trajectories show a continuous decrease in distance; hyperbolic trajectories show the moonlet moving away to infinity.
+
+**Speed plot – \(u(t)\)**  
+Shows the magnitude of the orbital speed. This graph helps students see, for example, that speed is highest near periapsis and lowest near apoapsis, and how the impact modifies the speed curve.
+
+**Brightness plot – \(L(t)\)**  
+Simulates photometric observations similar to those used in the real DART mission.
+
+> **Geometric assumption – position of Earth:**  
+> The Earth is assumed to lie far away along the **positive y-axis** of the simulation. In other words, the observer looks at the system from “above” along the direction of the y-axis in Area 4.
+
+With this geometry, the total brightness of the Didymos–Dimorphos system decreases slightly whenever the moonlet passes **in front of** the primary body as seen from Earth. In the simulation:
+
+- When the moonlet crosses the y-axis with a positive y-coordinate and its projected x-coordinate lies within the projected disk of the primary,  
+- The brightness \(L(t)\) drops to a value slightly below 1 (for example, to about \(0.95\)).
+
+This behaviour reproduces the idea of a **light curve**: by observing periodic dips in brightness, astronomers can infer the orbital period and study changes in the orbit before and after the impact.
+
+---
+
+## 4.4 Area 4 – Orbital Visualisation Canvas
+
+Area 4 is the main graphical canvas where the motion of the two bodies and the effect of the impact are visualised.
+
+**Orbital motion**  
+The moonlet’s position is updated by numerically integrating Newton’s law
+$$
+\vec a = -\frac{GM}{r^3}\,\vec r
+$$
+with small time steps. The path traced out by the moonlet forms the **orbit trail**, which may be open or closed depending on the energy and eccentricity.
+
+**Analytic conic preview**  
+A dashed curve shows the ideal conic section (ellipse, parabola, or hyperbola) computed directly from the initial conditions \(r_0\) and \(u_0\). This geometric orbit does not yet include the effect of the impact. Comparing the dashed preview with the post-impact trail helps students distinguish between the “original” and “modified” orbits.
+
+**Body sizes and collision radius**  
+When body images are enabled, the physical radii of the asteroids are calculated from their masses, assuming a fixed density. This defines a **collision radius** around the primary. If the orbit passes inside this radius, a collision with the central body is considered to occur.
+
+**Visualisation of the impact**  
+When the **Impact** button is pressed:
+
+1. The spacecraft collides head-on with the moonlet, with velocity opposite to its instantaneous velocity.  
+2. A new velocity is computed from conservation of momentum, and the mass of the moonlet effectively includes the spacecraft.  
+3. The simulation immediately recomputes the orbital energy, angular momentum and eccentricity.  
+4. The orbit trail now follows the **new** trajectory, which may be more or less eccentric, or even switch from bound to unbound (or vice versa), depending on the chosen settings.
+
+These visual cues in Area 4 make the abstract equations of Sections 3.1–3.7 tangible and help students see, step by step, how a relatively small change in velocity can result in a measurable change in orbital motion.
+
+---
+
+## 4.5 Summary of Built-In Physical Assumptions
+
+To keep the simulation conceptually clear and suitable for classroom use, the following simplifying assumptions are built into the model:
+
+1. **The initial velocity is always perpendicular to the radius vector**, so the moonlet begins with purely tangential motion and no radial component.  
+2. **The impact is always head-on**, with the spacecraft velocity directly opposite to the moonlet’s instantaneous velocity at the moment of collision.  
+3. **The Earth is located along the positive y-axis**, so that dips in the brightness curve correspond to the moonlet passing in front of the primary body from the observer’s point of view.
+
+These assumptions allow students to focus on the core ideas of planetary defence: how gravity shapes orbits, how kinetic impactors work, and how small changes in velocity can be detected through careful observation of light curves.
+
 
 
