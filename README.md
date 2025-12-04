@@ -527,5 +527,84 @@ To keep the simulation conceptually clear and suitable for classroom use, the fo
 
 These assumptions allow students to focus on the core ideas of planetary defence: how gravity shapes orbits, how kinetic impactors work, and how small changes in velocity can be detected through careful observation of light curves.
 
+---
+
+# 5. Technical Implementation
+
+This section summarises how the DART simulation was implemented: the technologies used, the file structure, the multilingual design, and how the application can be run and modified.
+
+## 5.1 Technology Stack
+
+The simulation is a **purely client-side web application**. It runs entirely in the browser and does not require a server-side component or database.
+
+- **HTML5** – defines the page structure and the three main panels (Areas 1–4) of the interface.:contentReference[oaicite:0]{index=0}  
+- **CSS** – provides layout and styling (dark theme, responsive panels, controls, and status cards).  
+- **Modern JavaScript (ES modules)** – implements the physics model, numerical integration, drawing routines, user interface logic, orbit control and chart updates. Modules are loaded via `type="module"` in `index.html`.:contentReference[oaicite:1]{index=1}  
+- **Apache ECharts** – an external plotting library loaded from a CDN, used to render the four interactive charts for energy, distance, speed and brightness.  
+
+Because ES modules and `fetch()` are used, the simulation is intended to run from a simple HTTP server (local or online) rather than directly from the `file://` protocol.
+
+## 5.2 File Structure and Module Responsibilities
+
+At the top level the project contains:
+
+- `index.html` – main HTML file that defines the layout, includes the language selector, the three UI panels (Areas 1–3) and the `<canvas>` for Area 4. It also loads ECharts, the internationalisation script and the main JS module.:contentReference[oaicite:3]{index=3}  
+- `style.css` – the stylesheet (not shown here) responsible for the dark theme, grid-based layout, responsive behaviour, and visual details (cards, pills, sliders).
+
+All JavaScript files are placed inside the `scripts/` folder:
+
+- `config.js` – holds physical constants, simulation limits and rendering parameters (e.g. `G`, fixed time step, maximum number of steps, crash radius, maximum radius), as well as a function `createInitialState()` that initialises the simulation state (masses, initial distance, initial speed, spacecraft parameters, camera settings and various display flags).:contentReference[oaicite:4]{index=4}  
+- `physics.js` – implements the core physics of a central gravitational field and the geometric preview of the conic orbit. It:
+  - computes basic orbital quantities (energy, angular momentum, eccentricity, orbit type),  
+  - defines the acceleration `acc(state, r)` used by the integrator,  
+  - derives the physical collision radius from the mass and an assumed density,  
+  - provides functions to precompute the preview trajectory and to compute summary parameters for the UI.  
+- `draw.js` – handles all drawing on the `<canvas>`:
+  - grid and axes,
+  - central body and moonlet (either as small points or as images),
+  - trajectory trail,
+  - predicted conic orbit,
+  - velocity vectors, force indicators and geometric constructions (e.g. semi-major axis, foci, etc.).  
+- `ui.js` – connects the DOM elements (sliders, checkboxes, buttons) with the simulation state. It reads user input from Area 1, updates labels and numeric readouts, and exposes helper functions such as `initUI()` and `updateOrbitUI()` for use by other modules.:contentReference[oaicite:6]{index=6}  
+- `orbitControl.js` – provides higher-level operations on the orbit:
+  - `resetToInitial(state)` recomputes the preview trajectory, resets time, places the moonlet back at \(r_0\) with the initial tangential speed, clears the trail and updates the UI,  
+  - `autoFit(state, canvas)` adjusts the zoom and centre so that the orbit fits neatly in the canvas.:contentReference[oaicite:7]{index=7}  
+- `charts.js` – creates and manages the four ECharts plots:
+  - energy plot \(E(t), K(t), U(t)\),
+  - distance plot \(r(t)\),
+  - speed plot \(u(t)\),
+  - brightness plot \(L(t)\).  
+  It defines common chart options (dark colours, tooltips, zoom/pan controls), buffers incoming data points, and periodically refreshes the plots while keeping a maximum number of stored samples for performance.  
+- `i18n.js` and `i18n.json` – implement the multilingual layer (see Section 5.3).  
+
+The `scripts/img/` directory contains the graphical assets used in the interface (asteroid images, DART infographic, UI screenshots).
+
+The central coordinator is:
+
+- `main.js` – the main entry point. It:
+  - imports the configuration, drawing, physics, orbit control, charts and UI modules,  
+  - creates the initial state via `createInitialState()`,  
+  - initialises the charts and UI,  
+  - sets up event listeners for mouse wheel zoom and panning on the canvas,  
+  - runs the animation loop with `requestAnimationFrame`, updating the physical state, drawing the new frame in Area 4 and sending samples to the charts in Area 3,  
+  - keeps the numeric indicators in Area 2 up to date (energy, orbital period, orbit type).:contentReference[oaicite:10]{index=10}  
+
+This modular design separates concerns: physics, drawing, UI, charts and internationalisation are implemented in distinct files, making the codebase easier to understand and extend.
+
+## 5.3 Multilingual Design
+
+The simulation is fully multilingual and supports **eleven languages** (English, Greek, Spanish, French, German, Brazilian Portuguese, Italian, Arabic, Simplified Chinese, Japanese and Korean). All translations are stored in a single JSON file and applied dynamically at runtime.  
+
+### 5.3.1 Language Resources
+
+The file `scripts/i18n.json` contains a top-level object for each supported language:
+
+```json
+{
+  "en": { ... },
+  "el": { ... },
+  "es": { ... },
+  ...
+}
 
 
