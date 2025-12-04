@@ -91,8 +91,6 @@ It is structured in four short subsections, each aligned with the concepts compu
 
 This section summarises the core physics of motion in a central gravitational field, the classification of orbits as conic sections, and the effect of a kinetic impact on an orbiting body. We consider a two-body system where one body is much more massive than the other, $` M \gg m `$, so that the massive body can be treated as fixed at the origin.
 
----
-
 ## 3.1 Equation of Motion in a Central Gravitational Field
 
 In a two-body system with $` M \gg m `$, the motion can be described by the position vector $`\vec r(t)`$ of the small body $`m`$ relative to the massive body $`M`$.  
@@ -127,8 +125,6 @@ Using polar coordinates $`(r,\theta)`$, the motion is determined by:
 * the **initial velocity vector** $`\vec u_0`$, decomposed into radial and tangential components
 
 The tangential component determines the **angular momentum**, which together with the total speed fixes the orbit’s shape.
-
----
 
 ## 3.2 Energy, Angular Momentum and Orbit Classification
 
@@ -186,8 +182,6 @@ Thus:
 * If $`u_0 = u_{\text{esc}}`$, the trajectory is parabolic.
 * If $`u_0 > u_{\text{esc}}`$, the trajectory is hyperbolic and the body escapes.
 
----
-
 ## 3.3 Eccentricity and Conic Sections
 
 Eccentricity is defined by:
@@ -230,8 +224,6 @@ r_{\text{apo}} = \frac{p}{1 - e}
 ```
 
 Thus $`r_0`$ and $`u_0`$ fully determine $`E`$, $`h`$, $`e`$, and therefore the entire conic orbit.
-
----
 
 ## 3.4 Keplerian Motion in Bound Orbits
 
@@ -291,8 +283,6 @@ v_{x'} = -\frac{\sqrt{GMa}}{r}\sin E
 v_{y'} = \frac{\sqrt{GMa}}{r}\sqrt{1 - e^2}\cos E
 ```
 
----
-
 ## 3.5 Radial Motion and Free Fall
 
 If the tangential velocity is negligible ($`u_0 \approx 0`$), then:
@@ -308,8 +298,6 @@ E = \frac{\dot r^2}{2} - \frac{GM}{r}
 ```
 
 A sufficiently low-energy trajectory results in inward fall and collision.
-
----
 
 ## 3.6 Physical Radius and Collision Criterion
 
@@ -336,8 +324,6 @@ For an ellipse, collision occurs if:
 ```math
 r_{\text{peri}} = \frac{p}{1+e} \le R
 ```
-
----
 
 ## 3.7 Kinetic Impact and Change of Orbit
 
@@ -392,8 +378,6 @@ The interactive environment is organised into four numbered areas (see Figure 3)
 
 Each area focuses on a different aspect of orbital motion and impact physics, allowing students to adjust parameters, run the simulation and observe the physical consequences.
 
----
-
 ## 4.1 Area 1 – Settings (Initial Conditions and Display Options)
 
 Area 1 contains all controls that define the initial state of the two-body system and the DART-like impact, as well as options that toggle visual elements on and off. Each slider or checkbox corresponds to a specific physical or graphical quantity.
@@ -437,8 +421,6 @@ Several checkboxes allow students to add or remove visual layers in Area 4:
 
 By combining these options, students can progressively build up the visual representation of the system and focus on the features that are most relevant to the concept being taught.
 
----
-
 ## 4.2 Area 2 – Numerical Orbit Indicators
 
 Area 2 presents the key numerical quantities that describe the orbit at any given instant. These values are updated in real time as the simulation runs and change immediately after an impact.
@@ -457,17 +439,18 @@ Shows the elapsed simulation time since the start of the run.
 
 **Circular and escape speeds**  
 Displays the theoretical circular and escape speeds at the initial radius \(r_0\),
-$$
+
+```math
 u_{\text{circ}} = \sqrt{\frac{GM}{r_0}}, \qquad
 u_{\text{esc}} = \sqrt{\frac{2GM}{r_0}},
-$$
+```
 for direct comparison with the chosen initial speed \(u_0\).
 
 **Specific mechanical energy**  
 Reports the value of
-$$
+```math
 E = \frac{u^2}{2} - \frac{GM}{r},
-$$
+```
 per unit mass of the moonlet. This quantity is central for classifying orbits and for understanding how the impact alters the system.
 
 **Distance \(M\)–\(m\)**  
@@ -478,8 +461,6 @@ The dimensionless number that measures how “stretched” the orbit is. After t
 
 **Orbital period**  
 Displayed only when the orbit is bound, elliptical, and does not intersect the primary’s surface. It represents the time required for one complete revolution.
-
----
 
 ## 4.3 Area 3 – Time-Dependent Plots
 
@@ -507,17 +488,17 @@ With this geometry, the total brightness of the Didymos–Dimorphos system decre
 
 This behaviour reproduces the idea of a **light curve**: by observing periodic dips in brightness, astronomers can infer the orbital period and study changes in the orbit before and after the impact.
 
----
-
 ## 4.4 Area 4 – Orbital Visualisation Canvas
 
 Area 4 is the main graphical canvas where the motion of the two bodies and the effect of the impact are visualised.
 
 **Orbital motion**  
 The moonlet’s position is updated by numerically integrating Newton’s law
-$$
+
+```math
 \vec a = -\frac{GM}{r^3}\,\vec r
-$$
+```
+
 with small time steps. The path traced out by the moonlet forms the **orbit trail**, which may be open or closed depending on the energy and eccentricity.
 
 **Analytic conic preview**  
@@ -535,8 +516,6 @@ When the **Impact** button is pressed:
 4. The orbit trail now follows the **new** trajectory, which may be more or less eccentric, or even switch from bound to unbound (or vice versa), depending on the chosen settings.
 
 These visual cues in Area 4 make the abstract equations of Sections 3.1–3.7 tangible and help students see, step by step, how a relatively small change in velocity can result in a measurable change in orbital motion.
-
----
 
 ## 4.5 Summary of Built-In Physical Assumptions
 
