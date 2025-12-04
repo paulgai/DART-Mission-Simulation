@@ -632,9 +632,9 @@ The file `scripts/i18n.json` contains a top-level object for each supported lang
   "es": { ... },
   ...
 }
+```
 
 ---
-
 
 ## License and Attribution
 
