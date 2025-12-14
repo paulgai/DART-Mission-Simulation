@@ -32,31 +32,12 @@ const fmtExp = (x) => {
  *    }
  */
 export function initUI(state, callbacks) {
-  const showImagesEl = document.getElementById("showImages");
-  const showPointMassesEl = document.getElementById("showPointMasses");
-
-  // Body images <-> Point masses (mutually exclusive)
+  const showImagesEl = $("#showImages");
   if (showImagesEl) {
     showImagesEl.addEventListener("change", (e) => {
-      const on = !!e.target.checked;
-      state.showBodyImages = on;
-      if (on && state.showPointMasses) {
-        state.showPointMasses = false;
-        if (showPointMassesEl) showPointMassesEl.checked = false;
-      }
+      state.showBodyImages = e.target.checked;
     });
-  }
-
-  if (showPointMassesEl) {
-    showPointMassesEl.addEventListener("change", (e) => {
-      const on = !!e.target.checked;
-      state.showPointMasses = on;
-      if (on && state.showBodyImages) {
-        state.showBodyImages = false;
-        if (showImagesEl) showImagesEl.checked = false;
-      }
-    });
-  }
+}
 
   function bindPair(rangeId, numId, key, onChange) {
     const r = $(rangeId);

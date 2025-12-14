@@ -13,7 +13,7 @@ export const CRASH_R = 6; // ακτίνα πρόσκρουσης (world units)
 export const MAX_R = 5000; // ακτίνα «κόφτης» για ανοικτές
 
 // ====== Ρυθμίσεις ουράς (trail) / απόδοση ======
-export const TRAIL_MAX_BOUND = 4000; // max πραγματικά αποθηκευμένα σημεία ουράς
+export const TRAIL_MAX_BOUND = 2000; // max πραγματικά αποθηκευμένα σημεία ουράς
 export const TRAIL_DRAW_MAX = 600; // πόσα σημεία ζωγραφίζουμε ανά frame (downsample)
 export const TRAIL_RESAMPLE_STRIDE = 6; // κάθε πόσα frames ξανακάνουμε downsample
 
@@ -43,9 +43,8 @@ export function createInitialState() {
     showPreview: true,
     showTrail: true,
     stopOnCrash: true, // ΠΑΝΤΑ ενεργό
-    showClosedGeom: false, // Χαρακτηριστικά κλειστής τροχιάς (a, b, κέντρο, εστίες)
-    showBodyImages: true,
-    showPointMasses: false,
+    showClosedGeom: false, // Χαρακτηριστικά κλειστής τροχιάς (a, b, κέντρο, εστίες)    showBodyImages: true,
+
     // measure tool (2 draggable points)
     measureTool: {
       p1: { x: 0, y: 0 },

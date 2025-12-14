@@ -7,17 +7,38 @@
   --good: #3ddc97;
   --warn: #ffd166;
   --bad: #ef476f;
+
+  /* ===== Font sizes (ΠΑΙΖΕΙΣ ΕΔΩ) ===== */
+  --fs-base: 13px;
+  --fs-h1: 18px;
+  --fs-h2: 15px;
+  --fs-label: 12px;
+  --fs-input: 12px;
+  --fs-btn: 12px;
+  --fs-status: 12px;
+  --fs-legend: 11.5px;
+  --fs-chart-card: 11.5px;
+  --fs-chart-title: 12px;
+
+  /* ===== Colors for bodies (no images) ===== */
+  --body-M: #c9c9c9; /* light gray */
+  --body-m: #5f5f5f; /* dark gray */
 }
+
 * {
   box-sizing: border-box;
 }
+
 body {
   margin: 0;
   background: linear-gradient(180deg, #0b1020, #0a0f1f 60%, #0b0f1f);
   color: var(--text);
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
     "Noto Sans", "Liberation Sans", sans-serif;
+  font-size: var(--fs-base);
 }
+
+/* ===== Header ===== */
 header {
   padding: 16px 22px;
   border-bottom: 1px solid #1f2b52;
@@ -27,28 +48,89 @@ header {
   top: 0;
   z-index: 5;
 }
+
 header h1 {
-  font-size: 20px;
+  font-size: var(--fs-h1);
   font-weight: 600;
   margin: 0;
 }
+
+.header-row {
+  display: flex;
+  justify-content: space-between; /* τίτλος αριστερά, controls δεξιά */
+  align-items: center;
+  gap: 12px;
+}
+
+/* Δεξιά “μπλοκ” για fullscreen + language */
+.header-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Fullscreen button (αριστερά από language) */
+#fsBtn {
+  appearance: none;
+  border: 1px solid #2e417e;
+  background: #0d1842;
+  border-radius: 10px;
+  padding: 6px 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#fsBtn:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(110, 168, 254, 0.15) inset;
+}
+
+#fsBtn img {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* Language */
+.lang-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-label);
+  color: #cfe3ff;
+}
+
+.lang-switcher label {
+  font-size: var(--fs-label);
+}
+
+.lang-switcher select {
+  background: #0f1530;
+  border: 1px solid #38456f;
+  border-radius: 8px;
+  color: #e9eefc;
+  padding: 4px 8px;
+  font-size: var(--fs-label);
+}
+
+/* ===== Layout ===== */
 .wrap {
   display: grid;
-  grid-template-columns: 360px 1fr 360px; /* ΠΑΛΙΟ: 360px 1fr */
+  grid-template-columns: 360px 1fr 360px;
   gap: 18px;
   padding: 18px;
   min-height: calc(100vh - 64px);
 }
 
-/* Λίγο πιο “άνετο” breakpoint για κινητά / στενές οθόνες */
 @media (max-width: 1100px) {
   .wrap {
     grid-template-columns: 1fr;
   }
 }
 
-/* ===== Panel γραφημάτων ===== */
-
+/* ===== Charts Panel ===== */
 .charts {
   display: flex;
   flex-direction: column;
@@ -60,23 +142,23 @@ header h1 {
   border: 1px solid #2a3a73;
   border-radius: 12px;
   padding: 8px 8px 4px;
-  font-size: 12px;
+  font-size: var(--fs-chart-card);
 }
 
 .chart-title {
   margin: 0 0 4px;
-  font-size: 13px;
+  font-size: var(--fs-chart-title);
   font-weight: 600;
   color: #cfe3ff;
 }
 
-/* για πολύ στενές οθόνες τα γραφήματα πάνε κάτω */
 @media (max-width: 1100px) {
   .charts {
     order: 3;
   }
 }
 
+/* ===== Controls Panel ===== */
 .panel {
   background: var(--panel);
   border: 1px solid #1c274a;
@@ -85,12 +167,14 @@ header h1 {
   box-shadow: 0 10px 30px rgba(4, 8, 20, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
+
 .panel h2 {
   margin: 4px 0 10px;
-  font-size: 16px;
+  font-size: var(--fs-h2);
   font-weight: 600;
   color: #cfe3ff;
 }
+
 .controls .row {
   display: grid;
   grid-template-columns: 1fr 84px;
@@ -98,23 +182,28 @@ header h1 {
   align-items: center;
   margin-bottom: 12px;
 }
+
 label {
-  font-size: 13px;
+  font-size: var(--fs-label);
   color: var(--muted);
 }
+
 .ctl {
   padding: 10px 10px 8px;
   background: #0c1330;
   border: 1px solid #213062;
   border-radius: 12px;
 }
+
 .ctl label {
   display: block;
   margin-bottom: 6px;
 }
+
 input[type="range"] {
   width: 100%;
 }
+
 input[type="number"] {
   width: 100%;
   padding: 8px 10px;
@@ -122,14 +211,16 @@ input[type="number"] {
   color: var(--text);
   border: 1px solid #25366e;
   border-radius: 10px;
-  font-size: 13px;
+  font-size: var(--fs-input);
 }
+
 .btns {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   margin-top: 8px;
 }
+
 button {
   appearance: none;
   border: 1px solid #2e417e;
@@ -139,63 +230,76 @@ button {
   border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 13px;
+  font-size: var(--fs-btn);
   letter-spacing: 0.2px;
 }
+
 button:hover {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(110, 168, 254, 0.15) inset;
 }
+
 button.primary {
   background: linear-gradient(180deg, #1742a0, #12367f);
   border-color: #3f6ad8;
 }
+
 button.danger {
   background: #330e19;
   border-color: #7e2e47;
 }
+
+/* ===== Status ===== */
 .status {
   margin-top: 10px;
   padding: 10px 12px;
   border-radius: 10px;
   background: #0c1537;
   border: 1px solid #2a3a73;
-  font-size: 13px;
+  font-size: var(--fs-status);
 }
+
 .status .kv {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 6px;
 }
+
 .pill {
   padding: 2px 8px;
   border-radius: 999px;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 11px;
 }
+
 .pill.good {
   background: rgba(61, 220, 151, 0.15);
   color: var(--good);
   border: 1px solid rgba(61, 220, 151, 0.35);
 }
+
 .pill.warn {
   background: rgba(255, 209, 102, 0.12);
   color: var(--warn);
   border: 1px solid rgba(255, 209, 102, 0.35);
 }
+
 .pill.bad {
   background: rgba(239, 71, 111, 0.12);
   color: var(--bad);
   border: 1px solid rgba(239, 71, 111, 0.35);
 }
+
+/* ===== Legend (κάτω αριστερά) ===== */
 .legend {
   display: flex;
   gap: 10px;
-  font-size: 12px;
+  font-size: var(--fs-legend);
   color: var(--muted);
   margin-top: 8px;
   flex-wrap: wrap;
 }
+
 .dot {
   width: 10px;
   height: 10px;
@@ -203,20 +307,27 @@ button.danger {
   display: inline-block;
   margin-right: 6px;
   vertical-align: -1px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.25);
 }
+
+/* ΖΗΤΟΥΜΕΝΟ: M/m σε γκρι */
 .c-m {
-  background: #ffd166;
+  background: var(--body-M);
 }
+
 .c-mov {
-  background: #3ddc97;
+  background: var(--body-m);
 }
+
 .c-path {
   background: #6ea8fe;
 }
+
 .c-grid {
   background: #43507a;
 }
+
+/* ===== Canvas ===== */
 canvas {
   width: 100%;
   height: calc(100vh - 120px);
@@ -248,6 +359,7 @@ canvas {
   border-radius: 8px;
 }
 
+/* ===== Collapsible chart headers ===== */
 .chart-accordion {
   border: none;
   padding: 0;
@@ -262,63 +374,49 @@ canvas {
   display: none;
 }
 
-/* Βασικό στυλ για τα collapsible γραφήματα */
 details.chart-accordion {
   margin-bottom: 10px;
   border-radius: 10px;
 }
 
-/* Κρύψε το default βελάκι του browser */
 details.chart-accordion summary::-webkit-details-marker {
   display: none;
 }
+
 details.chart-accordion summary {
   list-style: none;
 }
 
-/* Τίτλος σαν κουμπί */
 details.chart-accordion > summary.chart-title {
   display: flex;
   align-items: center;
   position: relative;
-
-  padding: 8px 12px 8px 28px; /* extra αριστερό για το εικονίδιο */
+  padding: 8px 12px 8px 28px;
   cursor: pointer;
   user-select: none;
-
-  background: rgba(
-    15,
-    23,
-    42,
-    0.9
-  ); /* σκούρο κουμπί, ταιριάζει με dark theme */
+  background: rgba(15, 23, 42, 0.9);
   border: 1px solid rgba(148, 163, 184, 0.7);
   border-radius: 10px;
-
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-/* Όταν είναι ανοικτό, πιο “ενεργό” κουμπί */
 details.chart-accordion[open] > summary.chart-title {
-  background: rgba(37, 99, 235, 0.85); /* μπλε-ish active */
+  background: rgba(37, 99, 235, 0.85);
   border-color: #60a5fa;
 }
 
-/* Βελάκι αριστερά του τίτλου */
 details.chart-accordion > summary.chart-title::before {
-  content: "▶"; /* κλειστό: βελάκι δεξιά */
+  content: "▶";
   position: absolute;
   left: 10px;
   font-size: 0.8em;
   opacity: 0.9;
 }
 
-/* Όταν είναι ανοιχτό: βελάκι προς τα κάτω */
 details.chart-accordion[open] > summary.chart-title::before {
   content: "▼";
 }
 
-/* Λίγο κενό πάνω από το γράφημα μέσα στο panel */
 details.chart-accordion .chart-container {
   margin-top: 8px;
 }
@@ -333,44 +431,6 @@ details.chart-accordion .chart-container {
 .time-label {
   font-size: 0.85rem;
   color: var(--muted-text, #a3b5e6);
-}
-
-header {
-  padding: 16px 22px;
-  border-bottom: 1px solid #1f2b52;
-  background: rgba(10, 16, 34, 0.6);
-  backdrop-filter: blur(6px);
-  position: sticky;
-  top: 0;
-  z-index: 5;
-}
-
-.header-row {
-  display: flex;
-  justify-content: space-between; /* τίτλος αριστερά, language δεξιά */
-  align-items: center;
-  gap: 12px;
-}
-
-.lang-switcher {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: #cfe3ff;
-}
-
-.lang-switcher label {
-  font-size: 13px;
-}
-
-.lang-switcher select {
-  background: #0f1530;
-  border: 1px solid #38456f;
-  border-radius: 4px;
-  color: #e9eefc;
-  padding: 2px 6px;
-  font-size: 13px;
 }
 
 /* μικρό διακριτικό κουμπί PNG, πάνω δεξιά */
@@ -391,9 +451,7 @@ header {
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* ===== uPlot dark theme ===== */
-
-/* όλα τα κείμενα των αξόνων/legend σε ανοιχτό γκρι */
+/* ===== uPlot / ECharts text colors ===== */
 .uplot,
 .uplot .u-axis,
 .uplot .u-axis .u-values,
@@ -403,21 +461,18 @@ header {
   color: #d0d0d0 !important;
 }
 
-/* γραμμές grid πιο ορατές αλλά ήπιες */
 .uplot .u-grid {
   stroke: rgba(255, 255, 255, 0.18);
 }
 
-/* χωρίς extra κενό κάτω από το γράφημα */
-.chart-container {
-  position: relative;
-  margin-bottom: 0; /* ήταν 0.9rem */
-  width: 100%;
-  height: 220px;
-  position: relative;
-  margin-bottom: 0.9rem;
-}
-/* uPlot axis tick labels (SVG/HTML text) */
 .uplot text {
   fill: #d0d0d0 !important;
+}
+
+/* FIX: η .chart-container είχε διπλά/αντικρουόμενα */
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  margin-bottom: 0.9rem;
 }

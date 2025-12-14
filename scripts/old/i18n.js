@@ -2,27 +2,6 @@
 (function () {
   let translations = {};
   let currentLang = "en";
-
-  // Persist language selection in a cookie
-  const LANG_COOKIE = "dart_lang";
-
-  function setCookie(name, value, days = 365) {
-    const maxAge = Math.floor(days * 24 * 60 * 60);
-    document.cookie = `${name}=${encodeURIComponent(value)}; Max-Age=${maxAge}; Path=/; SameSite=Lax`;
-  }
-
-  function getCookie(name) {
-    const parts = document.cookie.split(";").map((x) => x.trim());
-    for (const p of parts) {
-      if (!p) continue;
-      const eq = p.indexOf("=");
-      if (eq === -1) continue;
-      const k = p.slice(0, eq);
-      if (k === name) return decodeURIComponent(p.slice(eq + 1));
-    }
-    return "";
-  }
-
   const ORBIT_TYPE_FALLBACK_EN = {
     orbit_type_fall: "Fall (u≈0)",
     orbit_type_circle: "Circle (E<0, e≈0)",
@@ -105,12 +84,6 @@
     currentLang = lang;
 
     // συγχρονισμός dropdown αν χρειάζεται
-
-    // save selection
-    try {
-      setCookie(LANG_COOKIE, lang, 365);
-    } catch (e) {}
-
     const select = document.getElementById("langSelect");
     if (select && select.value !== lang) {
       select.value = lang;
@@ -126,14 +99,17 @@
       return;
     }
 
-    const cookieLang = getCookie(LANG_COOKIE);
-    const select = document.getElementById("langSelect");
-    const selectLang = select ? select.value : "";
+    if (!translations[defaultLang]) {
+      const firstLang = Object.keys(translations)[0];
+      currentLang = firstLang;
+    } else {
+      currentLang = defaultLang;
+    }
 
-    const initialLang = cookieLang || selectLang || defaultLang;
-    setLanguage(initialLang);
+    applyTranslations();
 
     // σύνδεση dropdown
+    const select = document.getElementById("langSelect");
     if (select) {
       select.addEventListener("change", (e) => {
         setLanguage(e.target.value);

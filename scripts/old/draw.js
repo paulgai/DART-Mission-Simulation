@@ -306,7 +306,7 @@ export function draw(ctx, canvas, state) {
       const y0 = state.impactY;
 
       // Μήκος ίχνους σε world units
-      const lengthWorld = 30000;
+      const lengthWorld = 3000;
 
       const x1 = x0 - state.impactDirX * lengthWorld;
       const y1 = y0 - state.impactDirY * lengthWorld;
@@ -359,29 +359,12 @@ export function draw(ctx, canvas, state) {
     // Δίσκος ΜΟΝΟ όταν ΔΕΝ χρησιμοποιώ εικόνες.
     // Χρώματα: M = ανοιχτό γκρι, χωρίς glow/«ομίχλη».
     if (!state.showBodyImages) {
-      const colM = "#858585ff";
+      ctx.beginPath();
+      ctx.arc(cx, cy, Rpx, 0, Math.PI * 2);
+      ctx.fillStyle = "#858585ff";
       ctx.shadowBlur = 0;
       ctx.shadowColor = "transparent";
-
-      if (state.showPointMasses) {
-        // outline only + central dot (for easier geometric measurements)
-        ctx.beginPath();
-        ctx.arc(cx, cy, Rpx, 0, Math.PI * 2);
-        ctx.lineWidth = 0.4;
-        ctx.strokeStyle = "#5f5f5f44";
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(cx, cy, 2.2, 0, Math.PI * 2);
-        ctx.fillStyle = colM;
-        ctx.fill();
-      } else {
-        // filled disk
-        ctx.beginPath();
-        ctx.arc(cx, cy, Rpx, 0, Math.PI * 2);
-        ctx.fillStyle = colM;
-        ctx.fill();
-      }
+      ctx.fill();
     }
 
     // ΕΙΚΟΝΑ M:
@@ -418,33 +401,18 @@ export function draw(ctx, canvas, state) {
       ctx.shadowBlur = 0;
       ctx.drawImage(imgm, mx - sizem / 2, my - sizem / 2, sizem, sizem);
     } else {
-      const colm = "#5f5f5f";
+      // Fallback: χρωματιστός δίσκος (ίδιου μεγέθους με το εικονίδιο)
+      // Χρώματα: m = σκούρο γκρι, χωρίς glow/«ομίχλη».
+      ctx.beginPath();
+      ctx.arc(mx, my, radiusPxm, 0, Math.PI * 2);
+      ctx.fillStyle = "#5f5f5f";
       ctx.shadowBlur = 0;
       ctx.shadowColor = "transparent";
+      ctx.fill();
 
-      if (state.showPointMasses) {
-        // outline only + central dot
-        ctx.beginPath();
-        ctx.arc(mx, my, radiusPxm, 0, Math.PI * 2);
-        ctx.lineWidth = 0.4;
-        ctx.strokeStyle = "#5f5f5f44";
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(mx, my, 2.2, 0, Math.PI * 2);
-        ctx.fillStyle = colm;
-        ctx.fill();
-      } else {
-        // filled disk
-        ctx.beginPath();
-        ctx.arc(mx, my, radiusPxm, 0, Math.PI * 2);
-        ctx.fillStyle = colm;
-        ctx.fill();
-
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = "rgba(255,255,255,0.25)";
-        ctx.stroke();
-      }
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgba(255,255,255,0.25)";
+      ctx.stroke();
     }
 
     // === Διάνυσμα ταχύτητας όπως πριν ===

@@ -1,5 +1,5 @@
 // charts.js – Apache ECharts + zoom/pan + save image (toolbox)
-// Γραφήματα: E(t), r(t), u(t), L(t)
+// Γραφήματα: E(t), K(t), U(t), r(t), u(t), L(t)
 
 import { G } from "./config.js";
 
@@ -18,19 +18,308 @@ const BRIGHT_AXIS_DECIMALS = 1; // για τα %, π.χ. 95.3%
 // Ελάχιστο εύρος (span) στον άξονα y για autofit
 const ENERGY_Y_MIN_SPAN = 1e-3; // τουλάχιστον 0.001 στις ενέργειες
 const SPEED_Y_MIN_SPAN = 1e-3; // τουλάχιστον 0.001 στην ταχύτητα
-const RADIUS_Y_MIN_SPAN = 10.0; // τουλάχιστον 1 m στην απόσταση
+const RADIUS_Y_MIN_SPAN = 10.0; // τουλάχιστον 10 m στην απόσταση
+
+// ===== Time-axis windowing (sliding x-range) =====
+// Θέλουμε στον άξονα χρόνου (ώρες):
+// [0, T1], και όταν t >= T1 → [T1-D, 2T1-D], όταν t >= 2T1-D → [2T1-2D, 3T1-D], κ.ο.κ.
+// Με T1=10h και D=2h προκύπτουν: [0,10], [8,18], [16,28], ...
+const TIME_WINDOW_T1 = 10; // ώρες
+const TIME_WINDOW_D = 2;  // ώρες
+const TIME_WINDOW_STEP = TIME_WINDOW_T1 - TIME_WINDOW_D; // T1-D
+
+// Μέγιστο όριο άξονα x (ώρες). Δεν το μειώνουμε ποτέ, μόνο το μεγαλώνουμε,
+// ώστε να μπορούμε να κάνουμε pan πίσω στο ιστορικό.
+let xAxisMaxHours = TIME_WINDOW_T1;
+
+// Θυμόμαστε ποιο «βηματικό» παράθυρο είναι ενεργό, ώστε:
+// - να μην «πολεμάμε» το pan του χρήστη σε κάθε frame
+// - αλλά να μετακινούμε αυτόματα το παράθυρο όταν αλλάζει το k
+let lastTimeWindowKey = null;
+
+// Τρέχον ορατό παράθυρο στον άξονα χρόνου (για y-autofit στο visible window)
+let currentXView = { min: 0, max: TIME_WINDOW_T1 };
+
+function computeTimeWindowHours(t) {
+  const T1 = TIME_WINDOW_T1;
+  const D = TIME_WINDOW_D;
+
+  if (!Number.isFinite(t) || t < T1) {
+    return { k: 0, min: 0, max: T1 };
+  }
+
+  // Safety: αν κάποιος βάλει D>=T1, μην "σκάσει" η λογική
+  if (!Number.isFinite(D) || !Number.isFinite(T1) || T1 <= 0 || D >= T1) {
+    return { k: 0, min: 0, max: Math.max(T1 || 0, t) };
+  }
+
+  // Θέλουμε αλλαγή παραθύρου στα όρια: T1, (2T1-D), (3T1-D), ...
+  // Για t>=T1, ο δείκτης k δίνεται από: k = floor((t + D)/T1)  (k=1 στο t=T1)
+  const k = Math.floor((t + D) / T1); // 1,2,3,...
+
+  const min = k * (T1 - D);     // 0, (T1-D), 2(T1-D), ...
+  const max = (k + 1) * T1 - D; // T1, (2T1-D), (3T1-D), ...
+
+  return { k, min, max };
+}
+
+
+
+
+
+// ===== X-axis sync (pan/zoom κοινό σε όλα τα γραφήματα) =====
+// Χρησιμοποιούμε echarts.connect ώστε όταν κάνεις pan/zoom σε ένα γράφημα,
+// να μετακινούνται ΟΛΑ τα γραφήματα μαζί (ίδιος άξονας χρόνου).
+const CHARTS_GROUP = "dart-charts-group";
+
+
+// ===== Download image: ΜΟΝΟ το τρέχον γράφημα =====
+// Το built-in toolbox saveAsImage σε connected charts μπορεί να προκαλέσει πολλαπλά downloads.
+// Χρησιμοποιούμε custom toolbox button που καλεί plot.getDataURL() μόνο για το συγκεκριμένο instance.
+const DOWNLOAD_ICON_PATH =
+  "path://M512 64c-17.7 0-32 14.3-32 32v224H352c-12.9 0-24.6 7.8-29.6 19.7-5 11.9-2.2 25.6 7.1 34.7l160 160c12.5 12.5 32.8 12.5 45.3 0l160-160c9.3-9.1 12.1-22.8 7.1-34.7C696.6 327.8 684.9 320 672 320H544V96c0-17.7-14.3-32-32-32zm-320 640c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32h640c17.7 0 32-14.3 32-32v-64c0-17.7-14.3-32-32-32H192z";
+
+function downloadCurrentChart(plot, label) {
+  if (!plot) return;
+  // ISO timestamp χωρίς ':' για Windows filename compatibility
+  const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+  const safeLabel = String(label || "chart").replace(/[^a-zA-Z0-9_-]+/g, "_");
+  const filename = `DART_${safeLabel}_${ts}.png`;
+
+  const url = plot.getDataURL({
+    type: "png",
+    pixelRatio: 4,
+    backgroundColor: "#0b1020",
+    excludeComponents: ["toolbox"], // μην φαίνονται τα εικονίδια στο export
+  });
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function installSingleChartDownloadTool(plot, label) {
+  if (!plot) return;
+  plot.setOption({
+    toolbox: {
+      feature: {
+        // Κρύψε το default, για να μη «τρέχει» σε connected charts
+        saveAsImage: { show: false },
+        // Κράτα το dataZoom όπως πριν
+        dataZoom: { yAxisIndex: "none" },
+        // Custom download
+        mySave: {
+          show: true,
+          title: "Download image",
+          icon: DOWNLOAD_ICON_PATH,
+          onclick: () => downloadCurrentChart(plot, label),
+        },
+      },
+    },
+  });
+}
+
+
+function connectPlotToGroup(plot) {
+  if (!plot || typeof echarts === "undefined") return;
+  plot.group = CHARTS_GROUP;
+  try {
+    echarts.connect(CHARTS_GROUP);
+  } catch (_) {}
+}
+
+let suppressUserDataZoomEvent = false;
+
+// ===== Y-axis autofit on pan/zoom =====
+// Όταν ο χρήστης κάνει pan/zoom στον άξονα x, κάνουμε άμεσα autofit στον y
+// με βάση *ΜΟΝΟ* τα ορατά δεδομένα.
+// Το datazoom event πυροδοτείται πολύ συχνά, οπότε κάνουμε throttle με rAF.
+let yFitRaf = 0;
+let pendingYFitWin = null;
+
+function applyYAutoFitToAllPlots(xWin) {
+  const win = xWin || currentXView;
+  if (!win) return;
+
+  const setY = (plot, span) => {
+    if (!plot) return;
+    plot.setOption(
+      {
+        yAxis: span ? { min: span.min, max: span.max } : { min: "dataMin", max: "dataMax" },
+      },
+      { notMerge: false, lazyUpdate: true }
+    );
+  };
+
+  // Ενέργειες
+  setY(
+    energyEPlot,
+    energyEPlot
+      ? computeSpanWithMinInRange(energyX, energyTotal, win.min, win.max, ENERGY_Y_MIN_SPAN)
+      : null
+  );
+  setY(
+    energyKPlot,
+    energyKPlot
+      ? computeSpanWithMinInRange(energyX, energyKin, win.min, win.max, ENERGY_Y_MIN_SPAN)
+      : null
+  );
+  setY(
+    energyUPlot,
+    energyUPlot
+      ? computeSpanWithMinInRange(energyX, energyPot, win.min, win.max, ENERGY_Y_MIN_SPAN)
+      : null
+  );
+
+  // Απόσταση / Ταχύτητα
+  setY(
+    radiusPlot,
+    radiusPlot
+      ? computeSpanWithMinInRange(radiusX, radiusY, win.min, win.max, RADIUS_Y_MIN_SPAN)
+      : null
+  );
+  setY(
+    velPlot,
+    velPlot ? computeSpanWithMinInRange(velX, velY, win.min, win.max, SPEED_Y_MIN_SPAN) : null
+  );
+
+  // Brightness: fixed range, άρα δεν κάνουμε τίποτα.
+}
+
+function scheduleYAutoFit(xWin) {
+  const win = xWin || currentXView;
+  if (!win) return;
+  pendingYFitWin = win; // κράτα το πιο πρόσφατο range
+  if (yFitRaf) return;
+  yFitRaf = requestAnimationFrame(() => {
+    yFitRaf = 0;
+    applyYAutoFitToAllPlots(pendingYFitWin || currentXView);
+  });
+}
+
+// Διάβασε το τρέχον x-range από το dataZoom ενός plot (ώρες).
+function getXRangeFromPlot(plot) {
+  if (!plot) return null;
+  try {
+    const opt = plot.getOption ? plot.getOption() : null;
+    const dz = opt && opt.dataZoom && opt.dataZoom[0] ? opt.dataZoom[0] : null;
+    const xa = opt && opt.xAxis && opt.xAxis[0] ? opt.xAxis[0] : null;
+
+    const axisMin =
+      xa && typeof xa.min === "number" ? xa.min : 0;
+    const axisMax =
+      xa && typeof xa.max === "number" ? xa.max : xAxisMaxHours;
+
+    // προτιμάμε startValue/endValue (είναι «σε μονάδες», όχι %)
+    const sv = dz ? dz.startValue : null;
+    const ev = dz ? dz.endValue : null;
+    if (typeof sv === "number" && typeof ev === "number") {
+      return { min: sv, max: ev };
+    }
+
+    // fallback: start/end σε %
+    const s = dz ? dz.start : null;
+    const e = dz ? dz.end : null;
+    if (typeof s === "number" && typeof e === "number") {
+      const a = axisMin + ((axisMax - axisMin) * s) / 100;
+      const b = axisMin + ((axisMax - axisMin) * e) / 100;
+      return { min: a, max: b };
+    }
+  } catch (_) {}
+  return null;
+}
+
+function applyXWindowToPlot(plot, min, max) {
+  if (!plot) return;
+  suppressUserDataZoomEvent = true;
+  // dataZoomIndex: 0 (το "inside")
+  plot.dispatchAction({
+    type: "dataZoom",
+    dataZoomIndex: 0,
+    startValue: min,
+    endValue: max,
+  });
+  suppressUserDataZoomEvent = false;
+
+  // ενημέρωσε το τρέχον ορατό x-window (χρησιμοποιείται για y-autofit)
+  currentXView = { min, max };
+}
+
+function applyXWindowToAllPlots(min, max) {
+  applyXWindowToPlot(energyEPlot, min, max);
+  applyXWindowToPlot(energyKPlot, min, max);
+  applyXWindowToPlot(energyUPlot, min, max);
+  applyXWindowToPlot(radiusPlot,  min, max);
+  applyXWindowToPlot(velPlot,     min, max);
+  applyXWindowToPlot(brightPlot,  min, max);
+}
 
 // div containers
-let energyDiv = null;
+let energyEDiv = null;
+let energyKDiv = null;
+let energyUDiv = null;
 let radiusDiv = null;
 let velDiv = null;
 let brightDiv = null;
 
 // ECharts instances
-let energyPlot = null;
+let energyEPlot = null;
+let energyKPlot = null;
+let energyUPlot = null;
 let radiusPlot = null;
 let velPlot = null;
 let brightPlot = null;
+
+
+// Impact markers (κάθετες γραμμές στο χρόνο κρούσης) – x σε ώρες
+// Κάθε φορά που πατάμε Impact, προσθέτουμε νέο marker ώστε να φαίνεται το ιστορικό κρούσεων.
+let impactTimesHours = [];
+
+function impactMarkLine() {
+  // ECharts markLine: κάθετες γραμμές στα x = impactTimesHours
+  if (!impactTimesHours.length) return { data: [] };
+  return {
+    silent: true,
+    symbol: ["none", "none"],
+    zlevel: 0,
+    z: 0,
+    label: { show: false },
+    lineStyle: { color: "red", type: "dashed", width: 1 },
+    emphasis: { disabled: true },
+    data: impactTimesHours.map((t) => ({ xAxis: t })),
+  };
+}
+
+export function setImpactTime(tHours) {
+  // Backwards compatible name: πλέον *προσθέτει* νέο marker, δεν μετακινεί τον προηγούμενο.
+  const t = Number.isFinite(tHours) ? tHours : null;
+  if (t === null) return;
+
+  const last = impactTimesHours.length
+    ? impactTimesHours[impactTimesHours.length - 1]
+    : null;
+  // Αν πατηθεί πολλές φορές στο ίδιο ακριβώς t, μην το διπλο-γράφεις.
+  if (last !== null && Math.abs(last - t) < 1e-9) return;
+
+  impactTimesHours.push(t);
+
+  // Safety: κράτα μόνο τις πιο πρόσφατες (να μη βαραίνει άσκοπα)
+  const MAX_IMPACTS = 50;
+  if (impactTimesHours.length > MAX_IMPACTS) {
+    impactTimesHours.splice(0, impactTimesHours.length - MAX_IMPACTS);
+  }
+
+  updateAllPlots();
+}
+
+export function clearImpactTimes() {
+  impactTimesHours = [];
+  updateAllPlots();
+}
+
 
 // Για τη φωτεινότητα
 let prevRx = null;
@@ -179,6 +468,10 @@ function trimAll() {
 function baseChartOption({ yName, yFormatter, yMinInterval, yMin, yMax }) {
   return {
     backgroundColor: "transparent",
+    // Χωρίς animation, ώστε οι αλλαγές παραθύρου/zoom να εφαρμόζονται άμεσα
+    animation: false,
+    animationDuration: 0,
+    animationDurationUpdate: 0,
     textStyle: {
       color: "#d0d4ff",
       fontFamily:
@@ -196,21 +489,11 @@ function baseChartOption({ yName, yFormatter, yMinInterval, yMin, yMax }) {
       right: 8,
       top: 4,
       feature: {
-        saveAsImage: {
-          pixelRatio: 4, // μεγαλύτερη ανάλυση
-        },
-        dataZoom: {
-          yAxisIndex: "none",
-        },
+        saveAsImage: { pixelRatio: 4 },
+        dataZoom: { yAxisIndex: "none" },
       },
-      iconStyle: {
-        borderColor: "#e5e7eb",
-      },
-      emphasis: {
-        iconStyle: {
-          borderColor: "#ffffff",
-        },
-      },
+      iconStyle: { borderColor: "#e5e7eb" },
+      emphasis: { iconStyle: { borderColor: "#ffffff" } },
     },
     tooltip: {
       trigger: "axis",
@@ -222,6 +505,8 @@ function baseChartOption({ yName, yFormatter, yMinInterval, yMin, yMax }) {
     },
     xAxis: {
       type: "value",
+      min: 0,
+      max: xAxisMaxHours,
       name: "t (h)",
       nameLocation: "end",
       nameGap: 18,
@@ -268,138 +553,44 @@ function baseChartOption({ yName, yFormatter, yMinInterval, yMin, yMax }) {
   };
 }
 
-// ===== δημιουργία γραφημάτων =====
-function createEnergyPlot() {
-  if (!energyDiv || typeof echarts === "undefined") return;
-  if (energyPlot) return;
-
-  energyPlot = echarts.init(energyDiv);
-
-  const option = baseChartOption({
-    yName: "E (J/kg)",
-    yMinInterval: 0.001,
-    yFormatter: (v) => v.toFixed(ENERGY_AXIS_DECIMALS),
-  });
-
+function initSingleLinePlot(div, option, seriesName) {
+  if (!div || typeof echarts === "undefined") return null;
+  const plot = echarts.init(div);
+  // Σύνδεσε όλα τα plots σε κοινό group, ώστε pan/zoom σε ένα γράφημα
+  // να συγχρονίζει αυτόματα τον άξονα x σε όλα.
+  connectPlotToGroup(plot);
   option.series = [
     {
-      name: "E",
+      name: seriesName,
       type: "line",
       showSymbol: false,
       smooth: false,
       lineStyle: { width: 2 },
       data: [],
-    },
-    {
-      name: "K",
-      type: "line",
-      showSymbol: false,
-      smooth: false,
-      lineStyle: { width: 1.5 },
-      data: [],
-    },
-    {
-      name: "U",
-      type: "line",
-      showSymbol: false,
-      smooth: false,
-      lineStyle: { width: 1.5 },
-      data: [],
+      z: 2,
     },
   ];
+  plot.setOption(option);
 
-  option.legend = {
-    top: 4,
-    left: 10,
-    textStyle: { color: "#cbd5f5", fontSize: 10 },
-    selected: { E: true, K: false, U: false },
-  };
+  // Custom download (μόνο αυτό το chart)
+  installSingleChartDownloadTool(plot, seriesName);
 
-  energyPlot.setOption(option);
-
-  // Όταν αλλάζει το legend (E/K/U on-off) κάνε refit στον άξονα y
-  energyPlot.on("legendselectchanged", () => {
-    recomputeEnergyYAxisSpan();
-  });
-}
-
-function createRadiusPlot() {
-  if (!radiusDiv || typeof echarts === "undefined") return;
-  if (radiusPlot) return;
-
-  radiusPlot = echarts.init(radiusDiv);
-
-  const option = baseChartOption({
-    yName: "r (m)",
-    yMinInterval: 1,
-    yFormatter: (v) => v.toFixed(RADIUS_AXIS_DECIMALS),
+  // Όταν ο χρήστης κάνει pan/zoom (dataZoom), κράτα το τρέχον x-range
+  // ώστε να κάνουμε y-autofit ΜΟΝΟ στα ορατά δεδομένα.
+  plot.on("datazoom", () => {
+    if (suppressUserDataZoomEvent) return;
+    const r = getXRangeFromPlot(plot);
+    if (r) {
+      currentXView = r;
+      // Άμεσο y-autofit στο ορατό window όταν ο χρήστης κάνει pan/zoom
+      scheduleYAutoFit(r);
+    }
   });
 
-  option.series = [
-    {
-      name: "r",
-      type: "line",
-      showSymbol: false,
-      smooth: false,
-      lineStyle: { width: 2 },
-      data: [],
-    },
-  ];
-
-  radiusPlot.setOption(option);
-}
-
-function createVelPlot() {
-  if (!velDiv || typeof echarts === "undefined") return;
-  if (velPlot) return;
-
-  velPlot = echarts.init(velDiv);
-
-  const option = baseChartOption({
-    yName: "u (m/s)",
-    yMinInterval: 0.001,
-    yFormatter: (v) => v.toFixed(SPEED_AXIS_DECIMALS),
-  });
-
-  option.series = [
-    {
-      name: "u",
-      type: "line",
-      showSymbol: false,
-      smooth: false,
-      lineStyle: { width: 2 },
-      data: [],
-    },
-  ];
-
-  velPlot.setOption(option);
-}
-
-function createBrightPlot() {
-  if (!brightDiv || typeof echarts === "undefined") return;
-  if (brightPlot) return;
-
-  brightPlot = echarts.init(brightDiv);
-
-  const option = baseChartOption({
-    yName: "L (%)",
-    yMin: 0.94,
-    yMax: 1.0,
-    yFormatter: (v) => (v * 100).toFixed(BRIGHT_AXIS_DECIMALS) + "%",
-  });
-
-  option.series = [
-    {
-      name: "L",
-      type: "line",
-      showSymbol: false,
-      smooth: false,
-      lineStyle: { width: 2 },
-      data: [],
-    },
-  ];
-
-  brightPlot.setOption(option);
+  // Εφάρμοσε το τρέχον «βηματικό» παράθυρο στο plot που μόλις δημιουργήθηκε.
+  const tw = computeTimeWindowHours(tHours);
+  if (tw) applyXWindowToPlot(plot, tw.min, tw.max);
+  return plot;
 }
 
 // helper για min/max + εφαρμογή minSpan
@@ -421,92 +612,232 @@ function computeSpanWithMin(arr, minSpan) {
   return { min, max };
 }
 
-function recomputeEnergyYAxisSpan() {
-  if (!energyPlot) return;
+// helper: min/max + minSpan ΜΟΝΟ για σημεία που είναι μέσα στο ορατό x-range
+function computeSpanWithMinInRange(xArr, yArr, xMin, xMax, minSpan) {
+  let min = Infinity;
+  let max = -Infinity;
 
-  const opt = energyPlot.getOption();
-  const legendArr = opt.legend || [];
-  const selected = legendArr[0]?.selected || {};
-
-  const values = [];
-
-  if (selected.E) {
-    for (const v of energyTotal) {
-      if (Number.isFinite(v)) values.push(v);
-    }
-  }
-  if (selected.K) {
-    for (const v of energyKin) {
-      if (Number.isFinite(v)) values.push(v);
-    }
-  }
-  if (selected.U) {
-    for (const v of energyPot) {
-      if (Number.isFinite(v)) values.push(v);
-    }
+  const n = Math.min(xArr.length, yArr.length);
+  for (let i = 0; i < n; i++) {
+    const x = xArr[i];
+    const y = yArr[i];
+    if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+    if (x < xMin || x > xMax) continue;
+    if (y < min) min = y;
+    if (y > max) max = y;
   }
 
-  if (!values.length) return;
+  // αν στο window δεν βρέθηκαν σημεία (π.χ. άδειο range), κάνε fallback σε όλη τη σειρά
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    return computeSpanWithMin(yArr, minSpan);
+  }
 
-  const span = computeSpanWithMin(values, ENERGY_Y_MIN_SPAN);
-  if (!span) return;
+  let span = max - min;
+  if (span < minSpan) {
+    const mid = 0.5 * (min + max);
+    min = mid - minSpan / 2;
+    max = mid + minSpan / 2;
+  }
+  return { min, max };
+}
 
-  energyPlot.setOption({
-    yAxis: { min: span.min, max: span.max },
+// ===== δημιουργία γραφημάτων (on-demand) =====
+function createEnergyEPlot() {
+  if (energyEPlot) return;
+  if (!energyEDiv) energyEDiv = document.getElementById("energyEChart");
+  const opt = baseChartOption({
+    yName: "E (J/kg)",
+    yMinInterval: 0.001,
+    yFormatter: (v) => v.toFixed(ENERGY_AXIS_DECIMALS),
   });
+  energyEPlot = initSingleLinePlot(energyEDiv, opt, "E");
+}
+
+function createEnergyKPlot() {
+  if (energyKPlot) return;
+  if (!energyKDiv) energyKDiv = document.getElementById("energyKChart");
+  const opt = baseChartOption({
+    yName: "K (J/kg)",
+    yMinInterval: 0.001,
+    yFormatter: (v) => v.toFixed(ENERGY_AXIS_DECIMALS),
+  });
+  energyKPlot = initSingleLinePlot(energyKDiv, opt, "K");
+}
+
+function createEnergyUPlot() {
+  if (energyUPlot) return;
+  if (!energyUDiv) energyUDiv = document.getElementById("energyUChart");
+  const opt = baseChartOption({
+    yName: "U (J/kg)",
+    yMinInterval: 0.001,
+    yFormatter: (v) => v.toFixed(ENERGY_AXIS_DECIMALS),
+  });
+  energyUPlot = initSingleLinePlot(energyUDiv, opt, "U");
+}
+
+function createRadiusPlot() {
+  if (radiusPlot) return;
+  if (!radiusDiv) radiusDiv = document.getElementById("radiusChart");
+  const opt = baseChartOption({
+    yName: "r (m)",
+    yMinInterval: 1,
+    yFormatter: (v) => v.toFixed(RADIUS_AXIS_DECIMALS),
+  });
+  radiusPlot = initSingleLinePlot(radiusDiv, opt, "r");
+}
+
+function createVelPlot() {
+  if (velPlot) return;
+  if (!velDiv) velDiv = document.getElementById("velocityChart");
+  const opt = baseChartOption({
+    yName: "u (m/s)",
+    yMinInterval: 0.001,
+    yFormatter: (v) => v.toFixed(SPEED_AXIS_DECIMALS),
+  });
+  velPlot = initSingleLinePlot(velDiv, opt, "u");
+}
+
+function createBrightPlot() {
+  if (brightPlot) return;
+  if (!brightDiv) brightDiv = document.getElementById("brightnessChart");
+  const opt = baseChartOption({
+    yName: "L (%)",
+    yMin: 0.94,
+    yMax: 1.0,
+    yFormatter: (v) => (v * 100).toFixed(BRIGHT_AXIS_DECIMALS) + "%",
+  });
+  brightPlot = initSingleLinePlot(brightDiv, opt, "L");
 }
 
 // ===== ενημέρωση δεδομένων =====
 function updateAllPlots() {
   trimAll();
 
-  if (energyPlot) {
-    const sE = energyX.map((t, i) => [t, energyTotal[i]]);
-    const sK = energyX.map((t, i) => [t, energyKin[i]]);
-    const sU = energyX.map((t, i) => [t, energyPot[i]]);
+  const tw = computeTimeWindowHours(tHours);
+  // Μεγάλωσε το συνολικό εύρος του άξονα x ώστε να χωρά πάντα το τρέχον βηματικό παράθυρο.
+  // (Αν το αφήσουμε στο extent των δεδομένων, στην αρχή "κολλάει" σε [0,1] κλπ.)
+  if (tw && Number.isFinite(tw.max)) {
+    xAxisMaxHours = Math.max(xAxisMaxHours, tw.max);
+  }
 
-    energyPlot.setOption({
-      series: [{ data: sE }, { data: sK }, { data: sU }],
+  const xWin = currentXView || { min: tw.min, max: tw.max };
+
+  if (energyEPlot) {
+    const s = energyX.map((t, i) => [t, energyTotal[i]]);
+    const span = computeSpanWithMinInRange(energyX, energyTotal, xWin.min, xWin.max, ENERGY_Y_MIN_SPAN);
+    energyEPlot.setOption({
+      series: [{ data: s, markLine: impactMarkLine(), z: 2 }],
+      yAxis: span ? { min: span.min, max: span.max } : { min: 'dataMin', max: 'dataMax' },
     });
+  }
 
-    // fit με βάση όσα είναι ενεργά στο legend (E / K / U)
-    recomputeEnergyYAxisSpan();
+  if (energyKPlot) {
+    const s = energyX.map((t, i) => [t, energyKin[i]]);
+    const span = computeSpanWithMinInRange(energyX, energyKin, xWin.min, xWin.max, ENERGY_Y_MIN_SPAN);
+    energyKPlot.setOption({
+      series: [{ data: s, markLine: impactMarkLine(), z: 2 }],
+      yAxis: span ? { min: span.min, max: span.max } : { min: 'dataMin', max: 'dataMax' },
+    });
+  }
+
+  if (energyUPlot) {
+    const s = energyX.map((t, i) => [t, energyPot[i]]);
+    const span = computeSpanWithMinInRange(energyX, energyPot, xWin.min, xWin.max, ENERGY_Y_MIN_SPAN);
+    energyUPlot.setOption({
+      series: [{ data: s, markLine: impactMarkLine(), z: 2 }],
+      yAxis: span ? { min: span.min, max: span.max } : { min: 'dataMin', max: 'dataMax' },
+    });
   }
 
   if (radiusPlot) {
-    const sR = radiusX.map((t, i) => [t, radiusY[i]]);
-    const span = computeSpanWithMin(radiusY, RADIUS_Y_MIN_SPAN);
+    const s = radiusX.map((t, i) => [t, radiusY[i]]);
+    const span = computeSpanWithMinInRange(radiusX, radiusY, xWin.min, xWin.max, RADIUS_Y_MIN_SPAN);
     radiusPlot.setOption({
-      series: [{ data: sR }],
-      yAxis: span ? { min: span.min, max: span.max } : {},
+      series: [{ data: s, markLine: impactMarkLine(), z: 2 }],
+      yAxis: span ? { min: span.min, max: span.max } : { min: 'dataMin', max: 'dataMax' },
     });
   }
 
   if (velPlot) {
-    const sV = velX.map((t, i) => [t, velY[i]]);
-    const span = computeSpanWithMin(velY, SPEED_Y_MIN_SPAN);
+    const s = velX.map((t, i) => [t, velY[i]]);
+    const span = computeSpanWithMinInRange(velX, velY, xWin.min, xWin.max, SPEED_Y_MIN_SPAN);
     velPlot.setOption({
-      series: [{ data: sV }],
-      yAxis: span ? { min: span.min, max: span.max } : {},
+      series: [{ data: s, markLine: impactMarkLine(), z: 2 }],
+      yAxis: span ? { min: span.min, max: span.max } : { min: 'dataMin', max: 'dataMax' },
     });
   }
 
   if (brightPlot) {
-    const sL = brightX.map((t, i) => [t, brightY[i]]);
-    // εδώ κρατάμε το fixed [0.94, 1.0]
+    const s = brightX.map((t, i) => [t, brightY[i]]);
+    // fixed y-range [0.94, 1.0]
     brightPlot.setOption({
-      series: [{ data: sL }],
+      series: [{ data: s, markLine: impactMarkLine(), z: 2 }],
     });
   }
+
+  // Κράτα κοινό εύρος άξονα x σε όλα τα plots (min=0, max=xAxisMaxHours),
+  // ώστε το dataZoom να μπορεί να δείξει σταθερά [0,T1] από την αρχή και να επιτρέπει pan στο ιστορικό.
+  const xAxisLock = { min: 0, max: xAxisMaxHours };
+  if (energyEPlot) energyEPlot.setOption({ xAxis: xAxisLock }, { notMerge: false, lazyUpdate: true });
+  if (energyKPlot) energyKPlot.setOption({ xAxis: xAxisLock }, { notMerge: false, lazyUpdate: true });
+  if (energyUPlot) energyUPlot.setOption({ xAxis: xAxisLock }, { notMerge: false, lazyUpdate: true });
+  if (radiusPlot)  radiusPlot.setOption({ xAxis: xAxisLock }, { notMerge: false, lazyUpdate: true });
+  if (velPlot)     velPlot.setOption({ xAxis: xAxisLock }, { notMerge: false, lazyUpdate: true });
+  if (brightPlot)  brightPlot.setOption({ xAxis: xAxisLock }, { notMerge: false, lazyUpdate: true });
+
+  // Εφάρμοσε το «βηματικό» παράθυρο ΜΟΝΟ όταν αλλάζει το k.
+  // Έτσι ο χρήστης μπορεί να κάνει pan μέσα στο ίδιο παράθυρο χωρίς να το
+  // επαναφέρουμε συνεχώς, αλλά όταν έρθει η στιγμή αλλαγής διαστήματος,
+  // θα μετακινηθεί αυτόματα (και μάλιστα συγχρονισμένα σε όλα τα γραφήματα).
+  const twKey = String(tw?.k ?? 0);
+  if (tw && twKey !== lastTimeWindowKey) {
+    lastTimeWindowKey = twKey;
+    applyXWindowToAllPlots(tw.min, tw.max);
+    // Αμέσως μετά τη μετατόπιση του x-window, κάνε y-autofit στο νέο ορατό range
+    applyYAutoFitToAllPlots({ min: tw.min, max: tw.max });
+  }
+
 }
 
-// ===== init / reset / update / resize =====
+// ===== δημόσια API =====
+export function ensureChart(kind) {
+  switch (kind) {
+    case "E":
+      createEnergyEPlot();
+      break;
+    case "K":
+      createEnergyKPlot();
+      break;
+    case "U":
+      createEnergyUPlot();
+      break;
+    case "R":
+      createRadiusPlot();
+      break;
+    case "V":
+      createVelPlot();
+      break;
+    case "L":
+      createBrightPlot();
+      break;
+    default:
+      break;
+  }
+
+  // Με το που δημιουργείται/εμφανίζεται, βάλε τα τρέχοντα δεδομένα.
+  updateAllPlots();
+}
+
 export function initCharts(state) {
-  energyDiv = document.getElementById("energyChart");
+  // cache divs (αν υπάρχουν)
+  energyEDiv = document.getElementById("energyEChart");
+  energyKDiv = document.getElementById("energyKChart");
+  energyUDiv = document.getElementById("energyUChart");
   radiusDiv = document.getElementById("radiusChart");
   velDiv = document.getElementById("velocityChart");
   brightDiv = document.getElementById("brightnessChart");
 
+  // reset δεδομένων
   energyX = [];
   energyTotal = [];
   energyKin = [];
@@ -523,6 +854,13 @@ export function initCharts(state) {
 
   tHours = 0;
   redrawCounter = 0;
+
+  // Επαναφορά παραθύρου χρόνου
+  xAxisMaxHours = TIME_WINDOW_T1;
+  lastTimeWindowKey = null;
+  currentXView = { min: 0, max: TIME_WINDOW_T1 };
+
+  impactTimesHours = [];
 
   prevRx = state.r?.x ?? null;
   prevRy = state.r?.y ?? null;
@@ -554,14 +892,14 @@ export function initCharts(state) {
     brightY.push(Number(L0.toFixed(BRIGHT_DECIMALS)));
   }
 
-  createEnergyPlot();
-  createRadiusPlot();
-  createVelPlot();
-  createBrightPlot();
+  // Δεν δημιουργούμε plots εδώ – δημιουργούνται on-demand από ensureChart(...)
   updateAllPlots();
 }
 
 export function resetEnergySeries(state) {
+  // Νέα προσομοίωση/αρχικοποίηση: καθάρισε το ιστορικό κρούσεων
+  impactTimesHours = [];
+
   energyX = [];
   energyTotal = [];
   energyKin = [];
@@ -578,6 +916,11 @@ export function resetEnergySeries(state) {
 
   tHours = 0;
   redrawCounter = 0;
+
+  // Επαναφορά παραθύρου χρόνου
+  xAxisMaxHours = TIME_WINDOW_T1;
+  lastTimeWindowKey = null;
+  currentXView = { min: 0, max: TIME_WINDOW_T1 };
 
   prevRx = state.r?.x ?? null;
   prevRy = state.r?.y ?? null;
@@ -671,8 +1014,10 @@ export function addEnergySample(state, dtSimSec) {
 }
 
 export function resizeCharts() {
-  if (energyDiv && energyPlot) energyPlot.resize();
-  if (radiusDiv && radiusPlot) radiusPlot.resize();
-  if (velDiv && velPlot) velPlot.resize();
-  if (brightDiv && brightPlot) brightPlot.resize();
+  if (energyEPlot) energyEPlot.resize();
+  if (energyKPlot) energyKPlot.resize();
+  if (energyUPlot) energyUPlot.resize();
+  if (radiusPlot) radiusPlot.resize();
+  if (velPlot) velPlot.resize();
+  if (brightPlot) brightPlot.resize();
 }
