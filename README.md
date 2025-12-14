@@ -408,42 +408,61 @@ Each area focuses on a different aspect of orbital motion and impact physics, al
 
 Area 1 contains all controls that define the initial state of the two-body system and the DART-like impact, as well as options that toggle visual elements on and off. Each slider or checkbox corresponds to a specific physical or graphical quantity.
 
-**Mass of the primary body (M)**  
-Sets the mass of the central asteroid (analogous to Didymos). A larger value of \(M\) strengthens the gravitational field and generally leads to shorter orbital periods for the same initial distance.
+**Language selector (persistent preference)**
+The interface includes a language selector. The selected language is stored locally in the browser (via a cookie), so after a page refresh the simulation automatically loads the last chosen language.
 
-**Mass of the orbiting body (m)**  
-Controls the mass of the moonlet (analogous to Dimorphos). Although the orbital motion is dominated by the primary (assumption \(M \gg m\)), the value of \(m\) affects how strongly the orbit changes after the impact, because momentum must be conserved in the collision.
+### Initial conditions and impact parameters
 
-**Initial distance \(r_0\)**  
-Defines the starting radial distance of the small body from the primary. This distance is measured along the x-axis and is directly visible in Area 4 as the initial position of the moonlet.
+**Mass of the primary body (M)**
+Sets the mass of the central body (analogous to Didymos). A larger value of (M) strengthens the gravitational field and generally leads to shorter orbital periods for the same initial distance.
 
-**Initial speed \(u_0\)**  
-Sets the magnitude of the initial orbital speed. In this model the initial velocity is always **perpendicular** to the radius vector \( \vec r \), so the motion starts with purely tangential velocity and **no radial component**. This corresponds to the standard Keplerian initial condition used in orbital mechanics.
+**Mass of the orbiting body (m)**
+Controls the mass of the moonlet (analogous to Dimorphos). Although the orbital motion is dominated by the primary (assumption (M \gg m)), the value of (m) affects how strongly the orbit changes after the impact, because momentum must be conserved in the collision.
 
-**Simulation speed**  
+**Initial distance (r_0)**
+Defines the starting radial distance of the small body from the primary. This distance is visible in Area 4 as the initial separation of the two bodies.
+
+**Initial speed (u_0)**
+Sets the magnitude of the initial orbital speed. In this model the initial velocity is always **perpendicular** to the radius vector ( \vec r ), so the motion starts with purely tangential velocity and **no radial component**.
+
+**Simulation speed**
 A time-scaling factor that speeds up or slows down the animation. Changing this value alters how fast the simulation runs on screen but does not change the underlying physics.
 
-**Spacecraft mass \(m_D\)**  
-The mass of the impacting spacecraft. Together with the spacecraft speed, it determines how much momentum is delivered to the moonlet during the collision.
+**Spacecraft mass (m_D)**
+The mass of the impacting spacecraft.
 
-**Spacecraft speed \(u_D\)**  
+**Spacecraft speed (u_D)**
 The relative speed of the spacecraft at the moment of impact.
 
-> **Model assumption – head-on impact:**  
-> The simulation always treats the collision as **head-on**. The spacecraft’s velocity is taken to be exactly opposite to the instantaneous velocity of the moonlet. This means that, at impact, the spacecraft moves along the same line as the moonlet but in the reverse direction. This idealised configuration maximises the change in orbital speed and simplifies the analysis of momentum transfer.
+> **Model assumption – head-on impact:**
+> The simulation always treats the collision as **head-on**. The spacecraft’s velocity is taken to be exactly opposite to the instantaneous velocity of the moonlet at the moment of collision. This idealised configuration maximises the change in orbital speed and simplifies the analysis of momentum transfer.
 
-**Display options**  
-Several checkboxes allow students to add or remove visual layers in Area 4:
+### Display options
 
-- **Grid** – draws a background grid in world units to give a sense of distance.  
-- **Body images** – shows the asteroids as scaled images instead of simple points; their radii are consistent with their masses and a chosen density.  
-- **Velocity vector** – displays the instantaneous velocity of the moonlet as an arrow.  
-- **Distance M–m** – draws the line segment joining the primary and the moonlet to emphasise the current separation.  
-- **Gravitational forces** – shows force vectors acting on the bodies.  
-- **Dashed orbit (Orbit prediction)** – displays the analytic conic section that corresponds to the initial orbital parameters.  
-- **Orbit trail** – shows the path actually followed by the moonlet during the numerical integration.  
-- **Orbit characteristics** – reveals additional geometric information for closed orbits, such as the semi-major and semi-minor axes and the foci.  
-- **Star field** – adds a decorative starry background that does not affect the physics.
+The following checkboxes control the visual layers shown in Area 4:
+
+* **Grid** – draws a background grid in world units to provide a clear distance scale.
+* **Body images** – displays the two bodies using scaled images rather than simple shapes.
+* **Point masses** – displays both bodies as simple filled circles (point-mass style), focusing on the idealised physics model.
+
+  * If **Body images** are enabled, selecting **Point masses** automatically disables images, so that the two modes are not used simultaneously.
+* **Velocity vector** – displays the instantaneous velocity of the moonlet as an arrow.
+* **Distance M–m** – draws the line segment joining the primary and the moonlet to emphasise their separation.
+* **Measure tool** – enables an interactive distance-measuring tool inside the canvas, based on two draggable points and a connecting segment. Distances are expressed using the grid scale.
+* **Gravitational forces** – shows force vectors acting on the bodies.
+* **Orbit prediction** – displays the analytic conic section computed from the initial conditions (dashed preview curve).
+* **Orbit trail** – shows the path actually followed by the moonlet during numerical integration.
+* **Closed-orbit characteristics** – when the orbit is bound, shows additional geometric information (e.g., ellipse axes and foci; for a circular orbit, centre and radius).
+
+### Run controls
+
+Area 1 also provides the main simulation actions:
+
+* **Start / Pause** – runs or temporarily stops the simulation.
+* **Reset** – resets the simulation state to the current settings (without reloading the page).
+* **Restore DART mission values** – restores the default DART-inspired parameter set (equivalent to returning to the initial “mission” setup).
+* **Clear trail** – clears the stored orbit trail while keeping the current motion.
+* **Impact** – triggers the DART-like collision at the current moment, applying momentum transfer and updating the post-impact orbit.
 
 By combining these options, students can progressively build up the visual representation of the system and focus on the features that are most relevant to the concept being taught.
 
